@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - SHL Medical</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom animations for the loading screen */
+        @keyframes pulse-grow {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+        
+        @keyframes spin-slow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes expand-fade {
+            0% { transform: scale(0.8); opacity: 0.8; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        
+        .logo-pulse {
+            animation: pulse-grow 2s infinite ease-in-out;
+        }
+        
+        .ring-spin {
+            animation: spin-slow 2s infinite linear;
+        }
+        
+        .circle-expand {
+            animation: expand-fade 2s infinite ease-out;
+        }
+        
+        /* Smooth transition for overlay */
+        .transition-all {
+            transition: all 0.5s ease-in-out;
+        }
+
+        /*Fade Out Effect for Loading Overlay*/
+        .fade-out {
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            animation-delay: 5s; /* Delay before fade out starts */
+        }
+        
+        /* Video background styles */
+        .video-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+            opacity: 0.6; /* Adjust transparency */
+        }
+          /* Add an overlay on the video for better text readability */
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4); /* Darker semi-transparent overlay */
+            z-index: -1;
+        }
+        
+        /* Fallback gradient when video isn't available */
+        .fallback-gradient {
+            background: linear-gradient(135deg, #019fac 0%, #54c1c6 100%);
+        }
+        
+        /* Custom gradient as a fallback */
+        .custom-gradient {
+            background: linear-gradient(135deg, #019fac 0%, #54c1c6 100%);
+        }
+
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen relative">    <!-- Video Background -->
+    <video autoplay loop muted playsinline class="video-background">
+        <source src="{{ url_for('static', filename='images/Celebrating-Molly- Customization _14secs_HD_20250520.mp4') }}" type="video/mp4">
+        <source src="{{ url_for('static', filename='images/Celebrating-Molly- Customization _14secs_20250520.mp4') }}" type="video/mp4">
+        <!-- Fallback content if video cannot be played -->
+        Your browser does not support the video tag.
+    </video>
+    <!-- Gradient fallback for when video can't load -->
+    <div class="fallback-gradient absolute inset-0 z-[-1] opacity-0 transition-opacity duration-500 bg-gradient-to-br from-blue-100 to-teal-200"></div>
+    <div class="video-overlay"></div><!-- Loading overlay with animated logo -->
+    <div id="loading-overlay" class="fixed inset-0 bg-white z-50 hidden flex-col items-center justify-center opacity-0 transition-all duration-500">
+        <div class="relative w-32 h-32">            <!-- Logo with custom pulse effect -->
+            <img src="{{ url_for('static', filename='images/white-logo.png') }}" 
+                 alt="SHL Logo" 
+                 class="w-24 h-24 object-contain absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 logo-pulse">
+            
+            <!-- Outer spinning ring -->
+            <div class="absolute inset-0 border-4 border-blue-200 border-t-blue-500 rounded-full ring-spin"></div>
+            
+            <!-- Multiple expanding circles for nicer effect -->
+            <div class="absolute inset-0 border-2 border-blue-400 rounded-full circle-expand"></div>
+            <div class="absolute inset-0 border-2 border-blue-400 rounded-full circle-expand" style="animation-delay: 0.5s;"></div>
+            <div class="absolute inset-0 border-2 border-blue-400 rounded-full circle-expand" style="animation-delay: 1s;"></div>
+        </div>
+        <p class="mt-8 text-gray-700 font-medium text-xl">Welcome to SHL Medical</p>
+        <p class="mt-2 text-blue-500 text-sm font-semibold">Redirecting to your dashboard...</p>
+    </div>    <div class="absolute top-6 right-6">
+        <img src="{{ url_for('static', filename='images/white-logo.png') }}" alt="SHL Medical Logo" class="h-20 w-auto">
+    </div>    <div class="bg-white bg-opacity-90 p-8 rounded-lg shadow-lg w-full max-w-md backdrop-blur-sm">
+        <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Login</h2>
+        
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="mb-4 p-4 rounded-md {{ 'bg-green-100 text-green-800' if category == 'success' else 'bg-red-100 text-red-800' }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <form method="POST" action="{{ url_for('login') }}">
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2" for="email">Email</label>
+                <input class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                       type="email" id="email" name="email" required>
+            </div>
+            <div class="mb-6">
+                <label class="block text-gray-700 mb-2" for="password">Password</label>
+                <input class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                       type="password" id="password" name="password" required>
+            </div>
+            <button class="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors"
+                    type="submit">Login</button>
+        </form>
+        
+        <div class="mt-4 text-center">
+            <a href="{{ url_for('forgot_password') }}" class="text-blue-500 hover:text-blue-600">Forgot Password?</a>
+        </div>
+    </div>    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.querySelector('form');
+            const loadingOverlay = document.getElementById('loading-overlay');
+            
+            // Video background handling
+            const videoBackground = document.querySelector('.video-background');
+              // Handle video loading issues
+            videoBackground.addEventListener('error', function(e) {
+                console.error('Video error:', e);
+                // Show the fallback gradient
+                const fallbackGradient = document.querySelector('.fallback-gradient');
+                fallbackGradient.classList.remove('opacity-0');
+                fallbackGradient.classList.add('opacity-100');
+                // Hide the video element
+                videoBackground.style.display = 'none';
+            });
+            
+            // Ensure video plays
+            videoBackground.addEventListener('canplay', function() {
+                console.log('Video can play now');
+                videoBackground.play().catch(e => {
+                    console.error('Video autoplay was prevented:', e);
+                    // Add play button for browsers that block autoplay
+                    const playButton = document.createElement('button');
+                    playButton.textContent = 'Play Background';
+                    playButton.classList.add('absolute', 'top-4', 'left-4', 'px-4', 'py-2', 'bg-blue-500', 'text-white', 'rounded', 'z-10');
+                    playButton.addEventListener('click', () => videoBackground.play());
+                    document.body.appendChild(playButton);
+                });
+            });
+            
+            // Function to show loading animation and redirect
+            function showLoadingAnimation() {
+                // First display the overlay
+                loadingOverlay.classList.remove('hidden');
+                loadingOverlay.classList.add('flex');
+                
+                // Then fade it in (triggers CSS transition)
+                setTimeout(() => {
+                    loadingOverlay.classList.add('opacity-100');
+                    loadingOverlay.classList.remove('opacity-0');
+                }, 10);
+            }
+            
+            // Check for success messages in the page (already logged in successfully)
+            const successMessages = document.querySelectorAll('.bg-green-100');
+            if (successMessages.length > 0) {
+                successMessages.forEach(message => {
+                    if (message.textContent.includes('Login successful')) {
+                        console.log('Found success message, showing animation and redirecting');
+                          // Show animation and redirect - this handles the case after successful login
+                        showLoadingAnimation();
+                        setTimeout(() => {
+                            window.location.href = "{{ url_for('home') }}";
+                        }, 5000); // 5 second delay before redirect
+                    }
+                    
+                });
+            } else {
+                // No success message yet, potentially first attempt
+                
+                // Modify the login form to use fetch API instead of native form submission
+                loginForm.addEventListener('submit', async function(event) {
+                    // Prevent the default form submission
+                    event.preventDefault();
+                    
+                    // Get form values
+                    const email = document.getElementById('email').value;
+                    const password = document.getElementById('password').value;
+                    
+                    // Only proceed if both fields are filled
+                    if (email && password) {
+                        try {                        // Show the loading animation immediately
+                            showLoadingAnimation();
+                            
+                            console.log('Loading animation will display for 5 seconds');
+                            
+                            // Submit the form data using fetch
+                            const response = await fetch("{{ url_for('login') }}", {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                },
+                                body: new URLSearchParams({
+                                    'email': email,
+                                    'password': password
+                                })
+                            });
+                            
+                            // Get the response text
+                            const responseText = await response.text();
+                            
+                            // Check if login was successful by looking for success message in the response
+                            if (responseText.includes('Login successful')) {
+                                console.log('Login successful, redirecting after animation');                                // Keep the animation going and redirect after delay
+                                setTimeout(() => {
+                                    window.location.href = "{{ url_for('home') }}";
+                                }, 5000); // 5 second delay before redirect
+                            } else {
+                                console.log('Login failed, hiding animation');
+                                // Hide the animation if login failed
+                                loadingOverlay.classList.add('opacity-0');
+                                setTimeout(() => {
+                                    loadingOverlay.classList.add('hidden');
+                                    loadingOverlay.classList.remove('flex');
+                                    // Refresh the page to show error message
+                                    window.location.reload();
+                                }, 500);
+                            }
+                        } catch (error) {
+                            console.error('Error during login:', error);
+                            // Hide animation on error
+                            loadingOverlay.classList.add('opacity-0');
+                            setTimeout(() => {
+                                loadingOverlay.classList.add('hidden');
+                                loadingOverlay.classList.remove('flex');
+                                alert('Login error. Please try again.');
+                            }, 500);
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

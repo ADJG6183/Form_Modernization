@@ -1,0 +1,492 @@
+<!-- Debug Modal -->
+<div id="debug-modal" class="modal">
+    <div class="modal-content">
+        <span class="modal-close">&times;</span>
+        <h2>PDF Diagnostics</h2>
+        
+        <div class="tabs">
+            <div class="tab-header">
+                <button class="tab-btn active" data-tab="debug">Debug Info</button>
+                <button class="tab-btn" data-tab="diagnostics">Portfolio Diagnostics</button>
+                <button class="tab-btn" data-tab="test-form-fill">Form Fill Test</button>
+                <button class="tab-btn" data-tab="system-info">System Info</button>
+                <button class="tab-btn" data-tab="error-log">Error Log</button>
+            </div>
+            <div class="tab-content">
+                <!-- Original Debug Tab -->
+                <div id="debug-tab" class="tab-pane active">
+                    <p>Copy this information and send it to your administrator.</p>
+                    <div class="debug-content">
+                        <textarea id="debug-text" rows="10"></textarea>
+                    </div>
+                    <div class="modal-actions">
+                        <button id="copy-debug" class="button button-secondary">Copy</button>
+                        <button id="close-debug" class="button button-primary">Close</button>
+                    </div>
+                </div>
+                
+                <!-- Diagnostics Tab -->
+                <div id="diagnostics-tab" class="tab-pane">
+                    <h3>Portfolio Validation</h3>
+                    <div class="diagnostics-status">
+                        <button id="run-diagnostics" class="button button-primary">Run Diagnostics</button>
+                        <div id="diagnostics-results"></div>
+                    </div>
+                </div>
+                
+                <!-- Form Fill Test Tab -->
+                <div id="test-form-fill-tab" class="tab-pane">
+                    <h3>Form Fill Test</h3>
+                    <div class="form-fill-test">
+                        <button id="run-form-fill-test" class="button button-primary">Run Form Fill Test</button>
+                        <div id="form-fill-results"></div>
+                    </div>
+                </div>
+                
+                <!-- System Info Tab -->
+                <div id="system-info-tab" class="tab-pane">
+                    <h3>System Information</h3>
+                    <div id="system-info-content">
+                        <button id="get-system-info" class="button button-primary">Get System Info</button>
+                        <div id="system-info-results"></div>
+                    </div>
+                </div>
+                
+                <!-- Error Log Tab -->
+                <div id="error-log-tab" class="tab-pane">
+                    <h3>Error Log</h3>
+                    <div id="error-log-content">
+                        <div class="form-group">
+                            <label>Error Message:</label>
+                            <textarea id="error-message" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Context Information:</label>
+                            <textarea id="error-context" rows="3"></textarea>
+                        </div>
+                        <button id="report-error" class="button button-primary">Report Error</button>
+                        <div id="error-report-status"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #debug-modal .modal-content {
+        max-width: 800px;
+    }
+    
+    /* Tab styles */
+    .tabs {
+        margin-top: 20px;
+    }
+    
+    .tab-header {
+        display: flex;
+        border-bottom: 1px solid #ddd;
+        margin-bottom: 15px;
+    }
+    
+    .tab-btn {
+        padding: 10px 15px;
+        border: none;
+        background: none;
+        cursor: pointer;
+    }
+    
+    .tab-btn.active {
+        border-bottom: 2px solid #0078d7;
+        font-weight: bold;
+    }
+    
+    .tab-pane {
+        display: none;
+        padding: 15px 0;
+    }
+    
+    .tab-pane.active {
+        display: block;
+    }
+    
+    /* Results styling */
+    #diagnostics-results, #form-fill-results, #system-info-results {
+        margin-top: 15px;
+        max-height: 400px;
+        overflow-y: auto;
+        background-color: #f5f5f5;
+        padding: 10px;
+        border: 1px solid #ddd;
+    }
+    
+    .success-item {
+        color: green;
+    }
+    
+    .warning-item {
+        color: orange;
+    }
+    
+    .error-item {
+        color: red;
+    }
+    
+    .json-key {
+        color: #0078d7;
+    }
+    
+    .json-value {
+        color: #333;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    
+    .form-group textarea {
+        width: 100%;
+    }
+    
+    #error-report-status {
+        margin-top: 10px;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const debugModal = document.getElementById('debug-modal');
+        const debugText = document.getElementById('debug-text');
+        const copyBtn = document.getElementById('copy-debug');
+        const closeBtn = document.getElementById('close-debug');
+        
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function() {
+                debugModal.style.display = 'none';
+            });
+        }
+        
+        if (copyBtn) {
+            copyBtn.addEventListener('click', function() {
+                debugText.select();
+                document.execCommand('copy');
+                alert('Debug information copied to clipboard');
+            });
+        }
+        
+        // Close modal when clicking on X or outside
+        const closeSpan = debugModal.querySelector('.modal-close');
+        if (closeSpan) {
+            closeSpan.addEventListener('click', function() {
+                debugModal.style.display = 'none';
+            });
+        }
+        
+        window.addEventListener('click', function(event) {
+            if (event.target === debugModal) {
+                debugModal.style.display = 'none';
+            }
+        });
+        
+        // Expose debug function globally
+        window.showDebugModal = function(info) {
+            if (debugText) {
+                debugText.value = typeof info === 'object' ? JSON.stringify(info, null, 2) : info.toString();
+                debugModal.style.display = 'flex';
+            }
+        };
+    });
+    
+    // Debug Modal Controls
+    document.addEventListener('DOMContentLoaded', function() {
+        // Original debug modal functionality
+        document.querySelector('.modal-close').addEventListener('click', function() {
+            document.getElementById('debug-modal').style.display = 'none';
+        });
+        
+        document.getElementById('close-debug').addEventListener('click', function() {
+            document.getElementById('debug-modal').style.display = 'none';
+        });
+        
+        document.getElementById('copy-debug').addEventListener('click', function() {
+            const debugText = document.getElementById('debug-text');
+            debugText.select();
+            document.execCommand('copy');
+            alert('Debug information copied to clipboard');
+        });
+        
+        // Tab switching logic
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+        
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Deactivate all tabs
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabPanes.forEach(p => p.classList.remove('active'));
+                
+                // Activate the clicked tab
+                btn.classList.add('active');
+                const tabId = btn.getAttribute('data-tab');
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+        
+        // Run Diagnostics button
+        document.getElementById('run-diagnostics')?.addEventListener('click', () => {
+            if (!window.portfolioEditor || !portfolioEditor.formData.portfolioId) {
+                alert('No portfolio ID found');
+                return;
+            }
+            
+            const portfolioId = portfolioEditor.formData.portfolioId;
+            const resultsDiv = document.getElementById('diagnostics-results');
+            resultsDiv.innerHTML = 'Running diagnostics...';
+            
+            fetch(`/diagnostics/portfolio/${portfolioId}/validate`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Format results
+                        const results = data.results;
+                        let html = '<h4>Diagnostic Results</h4>';
+                        
+                        // Summary
+                        html += `<div class="summary">
+                            <p><strong>Portfolio:</strong> ${results.summary.portfolio_name}</p>
+                            <p><strong>Fields:</strong> ${results.summary.field_count}</p>
+                            <p><strong>Status:</strong> <span class="${results.valid ? 'success-item' : 'error-item'}">
+                                ${results.valid ? 'Valid' : 'Invalid'}</span></p>
+                        </div>`;
+                        
+                        // Errors
+                        if (results.errors && results.errors.length > 0) {
+                            html += '<h4>Errors</h4><ul>';
+                            results.errors.forEach(error => {
+                                html += `<li class="error-item">${error}</li>`;
+                            });
+                            html += '</ul>';
+                        }
+                        
+                        // Warnings
+                        if (results.warnings && results.warnings.length > 0) {
+                            html += '<h4>Warnings</h4><ul>';
+                            results.warnings.forEach(warning => {
+                                html += `<li class="warning-item">${warning}</li>`;
+                            });
+                            html += '</ul>';
+                        }
+                        
+                        // Field information
+                        if (results.field_checks) {
+                            html += '<h4>Field Information</h4>';
+                            const fieldChecks = results.field_checks;
+                            
+                            html += `<p>Total fields: ${fieldChecks.count}</p>`;
+                            
+                            if (fieldChecks.by_type) {
+                                html += '<p>Field types:</p><ul>';
+                                for (const [type, count] of Object.entries(fieldChecks.by_type)) {
+                                    html += `<li>${type}: ${count}</li>`;
+                                }
+                                html += '</ul>';
+                            }
+                            
+                            if (fieldChecks.duplicate_names && fieldChecks.duplicate_names.length > 0) {
+                                html += '<p class="warning-item">Duplicate field names:</p><ul>';
+                                fieldChecks.duplicate_names.forEach(name => {
+                                    html += `<li>${name}</li>`;
+                                });
+                                html += '</ul>';
+                            }
+                        }
+                        
+                        resultsDiv.innerHTML = html;
+                    } else {
+                        resultsDiv.innerHTML = `<p class="error-item">Error: ${data.error}</p>`;
+                    }
+                })
+                .catch(error => {
+                    resultsDiv.innerHTML = `<p class="error-item">Error: ${error.message}</p>`;
+                });
+        });
+        
+        // Run Form Fill Test button
+        document.getElementById('run-form-fill-test')?.addEventListener('click', () => {
+            if (!window.portfolioEditor || !portfolioEditor.formData.portfolioId) {
+                alert('No portfolio ID found');
+                return;
+            }
+            
+            const portfolioId = portfolioEditor.formData.portfolioId;
+            const resultsDiv = document.getElementById('form-fill-results');
+            resultsDiv.innerHTML = 'Running form fill test...';
+            
+            fetch(`/diagnostics/test-form-fill/${portfolioId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({}) // Empty object for default test data
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Format results
+                        const results = data.results;
+                        let html = '<h4>Form Fill Test Results</h4>';
+                        
+                        // Summary
+                        html += `<div class="summary">
+                            <p><strong>Status:</strong> <span class="${results.success ? 'success-item' : 'error-item'}">
+                                ${results.success ? 'Success' : 'Failed'}</span></p>
+                        </div>`;
+                        
+                        // Performance info
+                        if (results.performance) {
+                            html += '<h4>Performance</h4>';
+                            html += `<p>Fill time: ${results.performance.fill_time_seconds.toFixed(2)} seconds</p>`;
+                            html += `<p>Fields per second: ${results.performance.fields_per_second.toFixed(2)}</p>`;
+                        }
+                        
+                        // Info
+                        if (results.info && results.info.length > 0) {
+                            html += '<h4>Info</h4><ul>';
+                            results.info.forEach(info => {
+                                html += `<li>${info}</li>`;
+                            });
+                            html += '</ul>';
+                        }
+                        
+                        // Errors
+                        if (results.errors && results.errors.length > 0) {
+                            html += '<h4>Errors</h4><ul>';
+                            results.errors.forEach(error => {
+                                html += `<li class="error-item">${error}</li>`;
+                            });
+                            html += '</ul>';
+                        }
+                        
+                        // Warnings
+                        if (results.warnings && results.warnings.length > 0) {
+                            html += '<h4>Warnings</h4><ul>';
+                            results.warnings.forEach(warning => {
+                                html += `<li class="warning-item">${warning}</li>`;
+                            });
+                            html += '</ul>';
+                        }
+                        
+                        resultsDiv.innerHTML = html;
+                    } else {
+                        resultsDiv.innerHTML = `<p class="error-item">Error: ${data.error}</p>`;
+                    }
+                })
+                .catch(error => {
+                    resultsDiv.innerHTML = `<p class="error-item">Error: ${error.message}</p>`;
+                });
+        });
+        
+        // Get System Info button
+        document.getElementById('get-system-info')?.addEventListener('click', () => {
+            const resultsDiv = document.getElementById('system-info-results');
+            resultsDiv.innerHTML = 'Getting system information...';
+            
+            fetch('/diagnostics/system-info')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Format system info
+                        const info = data.system_info;
+                        let html = '<h4>System Information</h4>';
+                        
+                        // Platform and Python version
+                        html += `<p><strong>Platform:</strong> ${info.platform}</p>`;
+                        html += `<p><strong>Python:</strong> ${info.python_version}</p>`;
+                        
+                        // PDF-related packages
+                        html += '<h4>PDF Packages</h4><ul>';
+                        info.packages.forEach(pkg => {
+                            html += `<li>${pkg.name}: ${pkg.version}</li>`;
+                        });
+                        html += '</ul>';
+                        
+                        resultsDiv.innerHTML = html;
+                    } else {
+                        resultsDiv.innerHTML = `<p class="error-item">Error: ${data.error}</p>`;
+                    }
+                })
+                .catch(error => {
+                    resultsDiv.innerHTML = `<p class="error-item">Error: ${error.message}</p>`;
+                });
+        });
+        
+        // Report Error button
+        document.getElementById('report-error')?.addEventListener('click', () => {
+            const errorMessage = document.getElementById('error-message')?.value;
+            const errorContext = document.getElementById('error-context')?.value;
+            const statusDiv = document.getElementById('error-report-status');
+            
+            if (!errorMessage) {
+                statusDiv.innerHTML = '<p class="error-item">Please provide an error message</p>';
+                return;
+            }
+            
+            statusDiv.innerHTML = 'Reporting error...';
+            
+            fetch('/api/log-client-error', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: errorMessage,
+                    context: errorContext || 'Reported from debug modal',
+                    page: window.location.pathname,
+                    portfolioId: window.portfolioEditor ? portfolioEditor.formData.portfolioId : null
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        statusDiv.innerHTML = '<p class="success-item">Error reported successfully</p>';
+                        if (document.getElementById('error-message')) document.getElementById('error-message').value = '';
+                        if (document.getElementById('error-context')) document.getElementById('error-context').value = '';
+                    } else {
+                        statusDiv.innerHTML = `<p class="error-item">Error reporting failed: ${data.error}</p>`;
+                    }
+                })
+                .catch(error => {
+                    statusDiv.innerHTML = `<p class="error-item">Error: ${error.message}</p>`;
+                });
+        });
+    });
+    
+    // Function to set debug information and open the modal
+    function showDebugInfo(debugInfo) {
+        const debugText = document.getElementById('debug-text');
+        if (debugText) {
+            debugText.value = typeof debugInfo === 'string' ? debugInfo : JSON.stringify(debugInfo, null, 2);
+            document.getElementById('debug-modal').style.display = 'flex';
+        }
+    }
+    
+    // Add to the global window object
+    window.showDebugInfo = showDebugInfo;
+    
+    // Function to open the debug modal
+    function openDebugModal() {
+        document.getElementById('debug-modal').style.display = 'flex';
+    }
+    
+    // Make available to portfolio editor if it exists
+    if (window.portfolioEditor) {
+        portfolioEditor.openDebugModal = openDebugModal;
+        portfolioEditor.showDebugInfo = showDebugInfo;
+    }
+</script>

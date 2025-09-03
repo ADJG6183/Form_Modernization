@@ -1,0 +1,63 @@
+{% macro file_list() %}
+<div class="bg-white rounded-lg shadow-sm p-6 max-w-4xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-semibold text-gray-800">Your Files</h2>
+        <div class="relative">
+            <input type="text" 
+                   id="fileSearch" 
+                   placeholder="Search files..." 
+                   class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <svg class="h-5 w-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+        </div>
+    </div>
+
+    <div id="fileLibrary">
+        <div class="grid grid-cols-12 text-sm font-medium text-gray-500 border-b border-gray-200 pb-2">
+            <div class="col-span-5">NAME</div>
+            <div class="col-span-3">UPLOADED</div>
+            <div class="col-span-2">TYPE</div>
+            <div class="col-span-2">ACTIONS</div>
+        </div>
+        <div id="fileList" class="mt-2 space-y-2">
+            {% if files %}
+                {% for file in files %}
+                <div class="grid grid-cols-12 items-center py-3 hover:bg-gray-50 rounded-lg" data-file-id="{{ file.id }}">
+                    <div class="col-span-5 flex items-center">
+                        <svg class="h-5 w-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                        </svg>
+                        {{ file.name }}
+                    </div>
+                    <div class="col-span-3">{{ file.upload_date }}</div>
+                    <div class="col-span-2">{{ file.file_type }}</div>
+                    <div class="col-span-2 flex space-x-2">
+                        <button onclick="previewFile('{{ file.id }}', '{{ file.name }}')" 
+                                class="text-blue-600 hover:text-blue-800">
+                            Preview
+                        </button>
+                        <button onclick="downloadFile('{{ file.id }}')"
+                                class="text-green-600 hover:text-green-800">
+                            Download
+                        </button>
+                        <button onclick="deleteFile('{{ file.id }}')"
+                                class="text-red-600 hover:text-red-800">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div id="emptyState" class="text-center py-16">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">No files</h3>
+                    <p class="mt-1 text-sm text-gray-500">Upload a file to get started</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endmacro %}

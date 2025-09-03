@@ -1,0 +1,566 @@
+/* === Base Customization === */
+body {
+  font-family: 'DM Sans', 'Segoe UI', Arial, sans-serif;
+  letter-spacing: 0.5px;
+  scroll-behavior: smooth;
+  background: linear-gradient(120deg, #f8fafc 0%, #e6f9f7 100%);
+  color: #222;
+  min-height: 100vh;
+}
+
+.custom-gradient {
+    background: linear-gradient(135deg, 
+        rgba(0, 171, 189, 0.4) 0%,
+        rgba(0, 113, 235, 0.2) 100%
+    );
+    background-size: 200% 200%;
+    animation: gradientAnimation 15s ease infinite;
+    background-attachment: fixed;
+}
+
+@keyframes gradientAnimation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* === Navigation Enhancements === */
+header {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  background: #ffffff;
+  padding-bottom: 0.5rem;
+}
+
+header h1 {
+  letter-spacing: 0.5px;
+  font-weight: 700;
+  font-size: 2rem;
+  color: #1e7f74;
+  transition: color 0.3s;
+}
+
+header h1:hover {
+  color: #0e4d47;
+}
+
+nav button {
+  transition: color 0.3s, background 0.3s, box-shadow 0.3s;
+  border-radius: 6px;
+  padding: 0.5rem 1.2rem;
+  background: #f0fdfa;
+  color: var(--shl-blue);
+  border: none;
+  font-weight: 500;
+  box-shadow: 0 1px 4px rgba(30,127,116,0.05);
+  border-bottom: 2px solid transparent;
+}
+
+nav button:hover {
+  color: #005BBD; /* Darker shade of SHL blue */
+  background: #1e7f74;
+  box-shadow: 0 4px 16px rgba(30,127,116,0.10);
+  border-bottom-color: var(--shl-blue);
+}
+
+nav button.active {
+  border-bottom-color: var(--shl-blue);
+  color: var(--shl-blue);
+}
+
+/* === Template Cards === */
+.template-card {
+  transition: transform 0.2s, box-shadow 0.3s, background 0.3s;
+  cursor: pointer;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e0f2f1;
+}
+
+.template-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 10px 24px rgba(30,127,116,0.10);
+  background: #e6f9f7;
+}
+
+/* === Buttons === */
+button {
+  transition: all 0.2s ease-in-out;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  outline: none;
+}
+
+button:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 8px rgba(30,127,116,0.08);
+}
+
+button:focus {
+  outline: 2px solid #1e7f74;
+  outline-offset: 2px;
+}
+
+/* === Footer === */
+footer {
+  background-image: linear-gradient(to right, #e6f9f7, #ffffff);
+  font-style: italic;
+  text-align: center;
+  padding: 1.5rem 0;
+  color: #1e7f74;
+  box-shadow: 0 -2px 8px rgba(30,127,116,0.04);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+
+/* === Responsive Tweaks === */
+@media (max-width: 768px) {
+  .template-card {
+    padding: 1rem;
+  }
+
+  header nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: right;
+  }
+}
+
+/* === Animations === */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.template-card {
+  animation: fadeInUp 0.5s ease;
+}
+
+/* === Custom Styles === */
+.bg-gray-750 {
+    background-color: #2d3748;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1a202c;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #4a5568;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #718096;
+}
+
+/* === File List Section === */
+.border-blue-500 {
+    border-color: #3b82f6;
+}
+
+button {
+    transition: all 0.2s ease-in-out;
+}
+
+.bg-gray-700:hover {
+    background-color: #4b5563;
+}
+
+/* Table styling */
+.grid-cols-12 > div {
+    padding: 0.5rem 1rem;
+}
+
+:root {
+    --shl-teal: #00ABB3;
+    --shl-blue: #0071EB;
+}
+
+/* Update existing styles */
+button.bg-blue-600 {
+    background-color: var(--shl-teal);
+}
+
+button.bg-blue-600:hover {
+    background-color: #009099;
+}
+
+.border-blue-500 {
+    border-color: var(--shl-teal);
+}
+
+.text-blue-400 {
+    color: var(--shl-teal);
+}
+
+.text-blue-400:hover {
+    color: #009099;
+}
+
+/* Shadow and hover effects */
+.shadow-sm {
+    box-shadow: 0 1px 2px 0 rgba(0, 171, 179, 0.05);
+}
+
+.hover\:bg-teal-50:hover {
+    background-color: rgba(0, 171, 179, 0.05);
+    transform: translateY(-2px);
+}
+
+/* === Custom Gradients === */
+.welcome-gradient {
+    background: linear-gradient(135deg, 
+        rgba(0, 171, 179, 0.1) 0%,
+        rgba(0, 113, 235, 0.1) 100%
+    );
+    border: 1px solid rgba(0, 171, 179, 0.2);
+}
+
+.tool-gradient {
+    background: linear-gradient(135deg, 
+        rgba(0, 171, 179, 0.05) 0%,
+        rgba(0, 113, 235, 0.05) 100%
+    );
+    border: 1px solid rgba(0, 171, 179, 0.1);
+}
+
+.tool-gradient:hover {
+    background: linear-gradient(135deg, 
+        rgba(0, 171, 179, 0.1) 0%,
+        rgba(0, 113, 235, 0.1) 100%
+    );
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+}
+
+/* Custom scrollbar for tools container */
+.overflow-x-auto {
+    scrollbar-width: thin;
+    scrollbar-color: #CBD5E0 #EDF2F7;
+}
+
+.overflow-x-auto::-webkit-scrollbar {
+    height: 6px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+    background: #EDF2F7;
+    border-radius: 3px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+    background-color: #CBD5E0;
+    border-radius: 3px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+    background-color: #A0AEC0;
+}
+
+/* Icon button hover effects */
+button svg {
+    transition: transform 0.2s ease-in-out;
+}
+
+button:hover svg {
+    transform: scale(1.1);
+}
+
+/* Tool Card Button Interactions */
+.tool-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tool-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 113, 235, 0.15);
+}
+
+.tool-card:active {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 113, 235, 0.1);
+}
+
+/* Button hover animations */
+.tool-button {
+    position: relative;
+    overflow: hidden;
+}
+
+.tool-button::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 113, 235, 0.05);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.3s ease;
+}
+
+.tool-button:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+/* Build Files Button Animation */
+.tool-button {
+    position: relative;
+    overflow: hidden;
+}
+
+.tool-button:hover .tool-card {
+    border-color: var(--shl-blue);
+}
+
+.tool-button:hover::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(0, 171, 179, 0.1) 0%,
+        rgba(0, 113, 235, 0.1) 100%
+    );
+    transition: opacity 0.3s ease;
+}
+
+.tool-button:active {
+    transform: scale(0.98);
+}
+
+/* Loading screen animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+#loading-screen {
+    animation: fadeIn 1s ease-in-out;
+}
+
+/* Loading screen transition */
+#loading-screen {
+    opacity: 0;
+    transition: opacity 3s ease-in-out;
+}
+
+#loading-screen.show {
+    opacity: 1;
+}
+
+.animate-spin {
+    animation: spin 3s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-active {
+    animation: fadeIn 1s ease-in forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/*Fade Out Animation */
+.fade-out {
+    animation: fadeOut 0.5s ease-in-out forwards;
+    animation-delay: 5s;
+}
+
+/* Custom Scrollbar Styling */
+.scroll-area {
+    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
+    transition: all 0.3s ease;
+}
+
+/* Hide scrollbar by default */
+.scroll-area::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+    display: none;
+}
+
+/* Show scrollbar on hover */
+.scroll-area:hover::-webkit-scrollbar {
+    display: block;
+}
+
+/* Scrollbar Track */
+.scroll-area::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+}
+
+/* Scrollbar Handle */
+.scroll-area::-webkit-scrollbar-thumb {
+    background: rgba(13, 148, 136, 0.3);  /* Teal with transparency */
+    border-radius: 10px;
+    transition: background 0.3s ease;
+}
+
+/* Scrollbar Handle on Hover */
+.scroll-area::-webkit-scrollbar-thumb:hover {
+    background: rgba(13, 148, 136, 0.5);  /* Darker teal on hover */
+}
+
+/* Ensure content doesn't jump when scrollbar appears */
+.scroll-area {
+    scrollbar-gutter: stable;
+    padding-bottom: 6px;
+}
+
+/* Interactive scroll container */
+.tools-container {
+    position: relative;
+    padding-bottom: 8px;
+    scroll-behavior: smooth;
+}
+
+/* Scrolling container styles */
+.tools-container {
+    position: relative;
+    overflow: hidden;
+}
+
+.scroll-area {
+    scrollbar-width: thin;
+    scrollbar-color: #0D9488 transparent;
+    scroll-behavior: smooth;
+}
+
+.scroll-area::-webkit-scrollbar {
+    height: 4px;
+}
+
+.scroll-area::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scroll-area::-webkit-scrollbar-thumb {
+    background-color: #0D9488;
+    border-radius: 2px;
+    transition: background-color 0.2s ease;
+}
+
+.scroll-area::-webkit-scrollbar-thumb:hover {
+    background-color: #0F766E;
+}
+
+/* Hide scrollbar but maintain functionality */
+.scroll-area {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.scroll-area::-webkit-scrollbar {
+    display: none;
+}
+
+/* Scroll buttons */
+.scroll-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(13, 148, 136, 0.1);
+    padding: 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.scroll-button:hover {
+    background-color: rgba(13, 148, 136, 0.2);
+}
+
+.scroll-left {
+    left: -20px;
+}
+
+.scroll-right {
+    right: -20px;
+}
+
+/* Add this to your existing CSS or create a new file */
+.modal-backdrop {
+    backdrop-filter: blur(2px);
+}
+
+.preview-modal {
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Flash messages */
+.flash-message {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0.5rem;
+}
+
+.flash-success {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: rgb(6, 95, 70);
+}
+
+.flash-error {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: rgb(153, 27, 27);
+}
+
+/* Add these styles for drag and drop */
+#drop-zone {
+    transition: all 0.3s ease;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#drop-zone.drag-over {
+    background-color: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.5);
+}
+
+.upload-progress {
+    transition: all 0.3s ease;
+}

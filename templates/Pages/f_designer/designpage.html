@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PDF Editor - {{ file.original_filename if file else 'No File' }}</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/white-logo.png') }}" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/designpage.css') }}" />
+    <!-- Material Icons for the portfolio approach -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- PDF.js library for viewing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- PDF-lib for form field manipulation -->
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script>
+        // Set up PDF.js worker
+        window.pdfjsLib = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
+        window.pdfjsLib.GlobalWorkerOptions = window.pdfjsLib.GlobalWorkerOptions || {};
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        
+        // Make sure the PDF URL is accessible to JavaScript
+        var pdfUrl = "{{ file_url }}";
+        console.log("PDF URL:", pdfUrl);  // Debug output
+        
+        // Check if PDF.js loaded properly
+        if (window.pdfjsLib) {
+            console.log("PDF.js library loaded successfully");
+        } else {
+            console.error("PDF.js library failed to load");
+        }
+    </script>
+    <style>
+        /* Zoom toolbar hover effect */
+        .zoom-toolbar:hover {
+            opacity: 1;
+        }
+        
+        /* Zoom button hover effect */
+        #zoom-in:hover, #zoom-out:hover {
+            background-color: rgba(1, 159, 172, 0.1);
+            color: var(--primary-color);
+        }
+        
+        /* Zoom button active effect */
+        #zoom-in:active, #zoom-out:active {
+            background-color: rgba(1, 159, 172, 0.2);
+            transform: scale(0.95);
+        }
+        
+        /* Form field styles */
+        .form-field {
+            position: absolute;
+            box-sizing: border-box;
+            border-radius: 3px;
+            cursor: move;
+            transition: border 0.2s, background-color 0.2s, box-shadow 0.2s;
+        }
+        
+        .form-field:hover {
+            box-shadow: 0 0 0 2px rgba(1, 159, 172, 0.5);
+        }
+        
+        .form-field.selected {
+            box-shadow: 0 0 0 2px var(--primary-color);
+            border-color: var(--primary-color) !important;
+            z-index: 5;
+        }
+        
+        /* Make the form overlay behave correctly */
+        #form-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 2;
+        }
+        
+        /* PDF container position */
+        .pdf-container {
+            position: relative;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Define hidden class for loading indicator */
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Field placement cursor styles */
+        .placing-field {
+            cursor: crosshair !important;
+        }
+        
+        /* Active field button highlight */
+        .form-field-btn.active {
+            background-color: rgba(1, 159, 172, 0.15);
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        /* Form field button transition */
+        .form-field-btn {
+            transition: background-color 0.2s, border-left 0.2s;
+        }
+        
+        /* Add smooth transitions */
+        .form-field-btn {
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            width: 100%;
+            text-align: left;
+            background: none;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-field-btn:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        .form-field-btn .material-icons {
+            margin-right: 0.75rem;
+            font-size: 1.25rem;
+            color: var(--primary-color);
+        }
+        
+        .form-field-btn .tool-label {
+            font-size: 0.9rem;
+            color: var(--text-color);
+        }
+        
+        /* Interactive PDF canvas */
+        #pdf-canvas {
+            transition: box-shadow 0.2s ease;
+        }
+        
+        #pdf-canvas:hover {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
+        }
+        
+        /* Field properties animation */
+        .field-properties {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        .field-properties.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .field-properties:not(.active) {
+            opacity: 0.7;
+            transform: translateY(5px);
+        }
+    </style>
+</head>
+    <link rel="icon" href="{{ url_for('static', filename='images/white-logo.png') }}" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/designpage.css') }}" />
+    <!-- Material Icons for the portfolio approach -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- PDF.js library for viewing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- PDF-lib for form field manipulation -->
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script>
+        // Set up PDF.js worker
+        window.pdfjsLib = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
+        window.pdfjsLib.GlobalWorkerOptions = window.pdfjsLib.GlobalWorkerOptions || {};
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        
+        // Make sure the PDF URL is accessible to JavaScript
+        var pdfUrl = "{{ file_url }}";
+        console.log("PDF URL:", pdfUrl);  // Debug output
+        
+        // Check if PDF.js loaded properly
+        if (window.pdfjsLib) {
+            console.log("PDF.js library loaded successfully");
+        } else {
+            console.error("PDF.js library failed to load");
+        }
+    </script>
+</head>
+<body data-file-id="{{ file.id if file else '' }}">
+    <!-- Main Container -->
+    <div class="main-container" style="margin-left: 0; width: 100%;">        <!-- Header -->
+        <div class="header" style="border-bottom: 1px solid rgba(0,0,0,0.05); margin-bottom: 1.5rem;">
+            <h1 class="page-title">Form Editor - {{ file.original_filename if file else 'No File' }}</h1>
+            <div class="actions">
+                <!-- Dropdown Menu -->
+                <div class="dropdown-container" style="position: relative; display: inline-block;">
+                    <button id="menu-button" class="button" style="background-color: var(--primary-color); color: white; padding: 0.5rem 1.5rem; border-radius: 6px; font-weight: 500; display: flex; align-items: center;">
+                        Actions
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 0.5rem;">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                    <div id="dropdown-menu" style="display: none; position: absolute; right: 0; top: 100%; background-color: white; border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); min-width: 180px; z-index: 100; margin-top: 0.5rem;">
+                        <button id="save-btn" class="dropdown-item" style="display: flex; align-items: center; padding: 0.75rem 1rem; width: 100%; text-align: left; border: none; background: none; cursor: pointer; font-size: 0.9rem;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.75rem;">
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                <polyline points="7 3 7 8 15 8"></polyline>
+                            </svg>
+                            Save
+                        </button>
+                        <button id="preview-btn" class="dropdown-item" style="display: flex; align-items: center; padding: 0.75rem 1rem; width: 100%; text-align: left; border: none; background: none; cursor: pointer; font-size: 0.9rem;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.75rem;">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            Preview
+                        </button>
+                        <a href="{{ url_for('home') }}" class="dropdown-item" style="display: flex; align-items: center; padding: 0.75rem 1rem; width: 100%; text-align: left; border: none; background: none; cursor: pointer; font-size: 0.9rem; text-decoration: none; color: inherit;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.75rem;">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                            </svg>
+                            Home
+                        </a>
+                        <hr style="margin: 0.25rem 0; border: none; border-top: 1px solid rgba(0,0,0,0.05);">
+                        <button id="top-logout-btn" class="dropdown-item" style="display: flex; align-items: center; padding: 0.75rem 1rem; width: 100%; text-align: left; border: none; background: none; cursor: pointer; font-size: 0.9rem; color: #c42828;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.75rem;">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                            </svg>
+                            Logout
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="avatar" style="width: 38px; height: 38px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-left: 1rem;">{{ session['user_email'][0]|upper if session.get('user_email') else 'U' }}</div>
+            </div>
+        </div>
+        
+        <!-- Content Area -->
+        <div class="content" style="display: flex;">
+            <!-- Form Tools Panel -->
+            <div class="content-card" style="width: 280px; height: calc(100vh - 120px); overflow-y: auto; margin-right: 20px; border-radius: 8px; box-shadow: var(--card-shadow);">
+                <div class="header" style="margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(0,0,0,0.05);">
+                    <h2 style="font-size: 1.25rem; font-weight: 500; color: var(--text-color);">Form Fields</h2>
+                </div>
+                
+                <div class="form-tools">
+                    <button id="addTextBox" class="form-field-btn" data-type="text">
+                        <span class="material-icons">text_fields</span> 
+                        <span class="tool-label">Add Text Box</span>
+                    </button>
+                    <button id="addSignature" class="form-field-btn" data-type="signature">
+                        <span class="material-icons">draw</span> 
+                        <span class="tool-label">Add Signature Field</span>
+                    </button>
+                    <button id="addCheckbox" class="form-field-btn" data-type="checkbox">
+                        <span class="material-icons">check_box</span> 
+                        <span class="tool-label">Add Check Box</span>
+                    </button>
+                    <button id="addNumber" class="form-field-btn" data-type="number">
+                        <span class="material-icons">pin</span> 
+                        <span class="tool-label">Add Number Field</span>
+                    </button>
+                </div>
+                
+                <div style="margin-top: 1.5rem;">
+                    <h3 class="section-title" style="font-size: 0.875rem; text-transform: uppercase; color: var(--secondary-color); margin-bottom: 0.75rem; font-weight: 500;">Field Properties</h3>
+                    <div class="field-properties">
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <input type="text" id="fieldName" placeholder="Field Name" class="form-input" style="width: 100%; padding: 0.5rem; border: 1px solid var(--secondary-color); border-radius: 6px;">
+                        </div>
+                        <div class="checkbox-group" style="margin-bottom: 0.5rem;">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="required" style="accent-color: var(--primary-color);">
+                                <span style="margin-left: 0.5rem;">Required Field</span>
+                            </label>
+                        </div>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="readonly" style="accent-color: var(--primary-color);">
+                                <span style="margin-left: 0.5rem;">Read Only</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="content-card" style="background-color: rgba(1, 159, 172, 0.05); border-left: 3px solid var(--primary-color); margin-top: 1.5rem; padding: 1rem; border-radius: 6px;">
+                    <strong style="font-weight: 500; display: block; margin-bottom: 0.5rem;">Instructions:</strong>
+                    <ol style="margin: 0 0 0 1rem; font-size: 0.9rem; color: var(--text-color);">
+                        <li style="margin-bottom: 0.5rem;">Select a field type</li>
+                        <li style="margin-bottom: 0.5rem;">Click on the PDF to place the field</li>
+                        <li>Use the Save button to save your form</li>
+                    </ol>
+                    <p style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--secondary-color);">Fields are placed relative to the PDF size for accuracy.</p>
+                </div>
+            </div>            <!-- Main Editor Area -->
+            <div class="content-card" style="flex: 1; border-radius: 8px; box-shadow: var(--card-shadow); display: flex; flex-direction: column; height: calc(100vh - 120px); overflow: hidden;">
+                <div class="card-body" style="flex: 1; display: flex; justify-content: center; align-items: center; background-color: #f5f7fa; position: relative; overflow: auto;">
+                    {% if file %}
+                        <div class="pdf-container" style="padding: 2rem;">
+                            <canvas id="pdf-canvas" style="max-width:1100px; width:100%; height:auto; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);"></canvas>
+                        </div>
+                    {% else %}
+                        <div style="text-align: center; color: var(--secondary-color); padding: 2rem;">
+                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 1rem; margin: 0 auto 1rem auto;">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                            <p>No file loaded. Please select a file to edit.</p>
+                        </div>
+                    {% endif %}                    <!-- PDF loading indicator -->
+                    <div id="pdf-loading" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background-color: rgba(255,255,255,0.85); z-index: 10;">
+                        <div style="display: flex; flex-direction: column; align-items: center;">
+                            <div style="width: 48px; height: 48px; border: 4px solid var(--primary-light); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                            <p style="margin-top: 1rem; color: var(--text-color);">Loading PDF...</p>
+                        </div>
+                    </div>
+                    <!-- PDF error message -->
+                    <div id="pdf-error" class="hidden" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.9); z-index: 10;">
+                        <div style="max-width: 400px; padding: 1.5rem; background-color: #FEF2F2; border: 1px solid #FCA5A5; border-radius: 8px;">
+                            <p id="pdf-error-message" style="color: #B91C1C; font-weight: 500;">Error loading PDF</p>
+                        </div>
+                    </div>
+                </div>
+                
+
+            </div>
+        </div>
+    </div>
+    
+    <!-- Zoom controls toolbar -->
+    <div class="zoom-toolbar" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; background-color: white; padding: 8px 16px; border-radius: 30px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); z-index: 20; opacity: 0.85; transition: opacity 0.3s;">
+        <button id="zoom-out" style="background: none; border: none; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: #555; border-radius: 50%; transition: all 0.2s;">
+            <span class="material-icons">zoom_out</span>
+        </button>
+        <span id="zoom-level" style="margin: 0 10px; min-width: 60px; text-align: center; font-weight: 500; color: #333;">100%</span>
+        <button id="zoom-in" style="background: none; border: none; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: #555; border-radius: 50%; transition: all 0.2s;">
+            <span class="material-icons">zoom_in</span>
+        </button>
+        <button id="prev-page" style="padding: 0.5rem 1rem; background-color: #F3F4F6; border: none; border-radius: 6px; margin-right: 1rem; cursor: pointer; color: var(--text-color);">
+                        &lt; Previous
+                    </button>
+                    <div style="display: flex; align-items: center;">
+                        <span style="color: var(--text-color);">Page</span>
+                        <input id="page-number" type="number" min="1" value="1" style="margin: 0 0.5rem; width: 3rem; text-align: center; border: 1px solid var(--secondary-color); border-radius: 4px; padding: 0.25rem;">
+                        <span style="color: var(--text-color);">of</span>
+                        <span id="page-count" style="margin-left: 0.5rem; color: var(--text-color);">1</span>
+                    </div>
+                    <button id="next-page" style="padding: 0.5rem 1rem; background-color: #F3F4F6; border: none; border-radius: 6px; margin-left: 1rem; cursor: pointer; color: var(--text-color);">
+                        Next &gt;
+                    </button>
+    </div>
+
+    <!-- Save Modal -->
+    <div id="save-modal" style="position: fixed; inset: 0; background-color: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 50;">
+        <div style="background-color: white; border-radius: 8px; padding: 1.5rem; width: 400px; box-shadow: 0 4px 24px rgba(0,0,0,0.1);">
+            <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-color);">Save Edits As</h3>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-size: 0.875rem; color: var(--text-color); margin-bottom: 0.5rem;">File Name</label>
+                <input type="text" id="save-filename" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--secondary-color); border-radius: 6px;" placeholder="Enter file name">
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button id="cancel-save" style="padding: 0.75rem 1.5rem; border: 1px solid var(--secondary-color); border-radius: 6px; background: none; cursor: pointer;">Cancel</button>
+                <button id="confirm-save" style="padding: 0.75rem 1.5rem; background-color: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notifications system -->
+    <div id="notification-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; max-width: 350px;"></div>
+    
+    <!-- Debug Info (hidden) -->
+    <div id="debug-info" style="display:none;">
+        <pre id="debug-output"></pre>
+    </div>
+      <!-- Debug information for PDF URL -->
+    <script>
+        // Log PDF URL information to help with debugging
+        console.log("===== PDF DEBUGGING =====");
+        console.log("File URL from template:", "{{ file_url if file_url else 'Not defined' }}");
+        console.log("File ID from template:", "{{ file.id if file else 'No file ID' }}");
+        console.log("Full serve URL:", "{{ url_for('serve_pdf', file_id=file.id) if file else 'No file to serve' }}");
+        console.log("=========================");
+    </script>
+    
+    <!-- Store file URL in JavaScript for easy access -->    <script>
+        // Set fileUrl as a global variable
+        const fileUrl = "{{ file_url if file_url else url_for('serve_pdf', file_id=file.id) if file else '' }}";
+        console.log('Setting fileUrl:', fileUrl);
+        
+        // Store in localStorage as fallback
+        localStorage.setItem("pdfUrl", fileUrl);
+        
+        // Add debug function
+        function logDebug(message) {
+            console.log(message);
+            const debugOutput = document.getElementById('debug-output');
+            if (debugOutput) {
+                debugOutput.textContent += message + '\n';
+            }
+        }
+        
+        // Check if we're opening from the saved files page
+        const comingFromSavedFiles = localStorage.getItem('openingFileId') === "{{ file.id if file else '' }}";
+        if (comingFromSavedFiles) {
+            logDebug('Opening from saved files page - will force reload the PDF');
+        }
+        
+        logDebug('Page loaded with fileUrl: ' + fileUrl);
+    </script><!-- Add additional script to ensure loading indicator is hidden -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check PDF loading indicator every 2 seconds until it's hidden
+            const loadingCheckInterval = setInterval(function() {
+                const loadingEl = document.getElementById('pdf-loading');
+                const errorEl = document.getElementById('pdf-error');
+                const canvas = document.getElementById('pdf-canvas');
+                
+                console.log('Checking loading status...');
+                
+                if (!loadingEl) {
+                    console.log('Loading element not found, clearing interval');
+                    clearInterval(loadingCheckInterval);
+                    return;
+                }
+                
+                // If canvas has content and no error is shown, we can hide loading
+                if (canvas && canvas.width > 0 && canvas.height > 0 && 
+                    (!errorEl || errorEl.classList.contains('hidden'))) {
+                    console.log('Canvas has content, hiding loading indicator');
+                    loadingEl.classList.add('hidden');
+                    clearInterval(loadingCheckInterval);
+                }
+            }, 2000); // Check every 2 seconds
+            
+            // Add a backup timeout for ultimate fallback
+            setTimeout(function() {
+                const loadingEl = document.getElementById('pdf-loading');
+                if (loadingEl && !loadingEl.classList.contains('hidden')) {
+                    console.log('Final fallback: Force hiding loading indicator after timeout');
+                    loadingEl.classList.add('hidden');
+                    clearInterval(loadingCheckInterval);
+                }
+            }, 15000); // 15 seconds ultimate timeout
+        });
+    </script>
+
+    <!-- Dropdown menu functionality -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuButton = document.getElementById('menu-button');
+            const dropdownMenu = document.getElementById('dropdown-menu');
+            
+            // Toggle dropdown menu when the menu button is clicked
+            if (menuButton && dropdownMenu) {
+                menuButton.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function() {
+                    if (dropdownMenu.style.display === 'block') {
+                        dropdownMenu.style.display = 'none';
+                    }
+                });
+                
+                // Prevent dropdown from closing when clicking inside it
+                dropdownMenu.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+                
+                // Add hover effect to dropdown items
+                const dropdownItems = document.querySelectorAll('.dropdown-item');
+                dropdownItems.forEach(item => {
+                    item.addEventListener('mouseover', function() {
+                        this.style.backgroundColor = 'rgba(1, 159, 172, 0.05)';
+                    });
+                    
+                    item.addEventListener('mouseout', function() {
+                        this.style.backgroundColor = '';
+                    });
+                });
+            }
+            
+            // Initialize the preview button
+            const previewBtn = document.getElementById('preview-btn');
+            if (previewBtn) {
+                previewBtn.addEventListener('click', function() {
+                    // Get the file ID and create a preview URL
+                    const fileId = document.body.dataset.fileId;
+                    if (fileId) {
+                        window.open(`/preview/${fileId}`, '_blank');
+                    } else {
+                        alert('No file is currently loaded.');
+                    }
+                });
+            }
+        });
+    </script>
+
+    <!-- Logout Function -->
+    <script>
+         document.addEventListener('DOMContentLoaded', function() {
+            // Logout button functionality with animation
+            const topLogoutBtn = document.getElementById('top-logout-btn');
+            if (topLogoutBtn) {
+                topLogoutBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Create fade-out overlay
+                    const overlay = document.createElement('div');
+                    overlay.style.position = 'fixed';
+                    overlay.style.top = '0';
+                    overlay.style.left = '0';
+                    overlay.style.width = '100%';
+                    overlay.style.height = '100%';
+                    overlay.style.backgroundColor = 'rgba(255, 255, 255, 0)';
+                    overlay.style.transition = 'background-color 0.5s ease';
+                    overlay.style.zIndex = '9999';
+                    document.body.appendChild(overlay);
+                    
+                    // Fade out and redirect
+                    setTimeout(() => {
+                        overlay.style.backgroundColor = 'rgba(255, 255, 255, 1)';
+                        setTimeout(() => {
+                            window.location.href = '/login';
+                        }, 500);
+                    }, 10);
+                });
+            }
+        });
+    </script>
+
+    <!-- Load our application script - using the portfolio approach -->
+    <script src="{{ url_for('static', filename='js/designpage_portfolio.js') }}"></script>
+    
+    <!-- Notification system -->
+    <script>
+        function showNotification(message, type = 'info', duration = 5000) {
+            const container = document.getElementById('notification-container');
+            if (!container) return;
+            
+            const notification = document.createElement('div');
+            
+            // Set styles based on type
+            let bgColor, borderColor, textColor, icon;
+            switch (type) {
+                case 'success':
+                    bgColor = '#dcfce7';
+                    borderColor = '#86efac';
+                    textColor = '#166534';
+                    icon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+                              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>`;
+                    break;
+                case 'error':
+                    bgColor = '#fee2e2';
+                    borderColor = '#fca5a5';
+                    textColor = '#b91c1c';
+                    icon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+                              <circle cx="12" cy="12" r="10"></circle>
+                              <line x1="15" y1="9" x2="9" y2="15"></line>
+                              <line x1="9" y1="9" x2="15" y2="15"></line>
+                            </svg>`;
+                    break;
+                case 'info':
+                default:
+                    bgColor = '#e0f2fe';
+                    borderColor = '#7dd3fc';
+                    textColor = '#0c4a6e';
+                    icon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+                              <circle cx="12" cy="12" r="10"></circle>
+                              <line x1="12" y1="16" x2="12" y2="12"></line>
+                              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>`;
+            }
+            
+            notification.style.cssText = `
+                padding: 12px 16px;
+                margin-top: 10px;
+                background-color: ${bgColor};
+                color: ${textColor};
+                border-left: 3px solid ${borderColor};
+                border-radius: 6px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                display: flex;
+                align-items: flex-start;
+                font-size: 14px;
+                transition: all 0.3s ease;
+                opacity: 0;
+                transform: translateY(20px);
+            `;
+            
+            notification.innerHTML = `
+                ${icon}
+                <div style="flex: 1; word-break: break-word;">${message}</div>
+                <button style="background: none; border: none; color: inherit; cursor: pointer; margin-left: 8px; font-size: 16px;">&times;</button>
+            `;
+            
+            container.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.style.opacity = '1';
+                notification.style.transform = 'translateY(0)';
+            }, 10);
+            
+            // Set close button
+            const closeBtn = notification.querySelector('button');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    closeNotification(notification);
+                });
+            }
+            
+            // Auto close after duration
+            const timeout = setTimeout(() => {
+                closeNotification(notification);
+            }, duration);
+            
+            // Store timeout id
+            notification.dataset.timeoutId = timeout;
+            
+            return notification;
+        }
+        
+        function closeNotification(notification) {
+            // Clear the timeout if it exists
+            if (notification.dataset.timeoutId) {
+                clearTimeout(Number(notification.dataset.timeoutId));
+            }
+            
+            // Animate out
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateY(20px)';
+            
+            // Remove after animation completes
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,230 @@
+/* SharePoint/OneDrive 1:1 Inspired Theme */
+:root {
+  --sp-primary: #2564cf;
+  --sp-primary-hover: #174ea6;
+  --sp-bg: #f3f6fb;
+  --sp-sidebar-bg: #fff;
+  --sp-sidebar-border: #e1e4e8;
+  --sp-card-bg: #fff;
+  --sp-card-shadow: 0 4px 16px rgba(0,0,0,0.07);
+  --sp-border: #e1e4e8;
+  --sp-text: #222;
+  --sp-text-light: #666;
+  --sp-radius: 8px;
+  --sp-font: 'Segoe UI', 'SegoeUI', 'Inter', 'system-ui', Arial, sans-serif;
+}
+
+body {
+  background: var(--sp-bg) !important;
+  font-family: var(--sp-font) !important;
+  color: var(--sp-text) !important;
+  margin: 0 !important;
+}
+
+/* Top Bar */
+header, .sp-topbar {
+  background: #fff !important;
+  border-bottom: 1px solid var(--sp-border) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
+  padding: 0.5rem 2rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  min-height: 56px !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  z-index: 30 !important;
+  backdrop-filter: blur(4px) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07) !important;
+}
+
+.sp-topbar .sp-search {
+  background: #f3f6fb !important;
+  border-radius: var(--sp-radius) !important;
+  border: 1px solid var(--sp-border) !important;
+  padding: 0.5rem 1rem !important;
+  font-size: 1rem !important;
+  width: 320px !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.sp-topbar .sp-avatar {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 50% !important;
+  background: #e1e4e8 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: 600 !important;
+  color: var(--sp-primary) !important;
+  font-size: 1.1rem !important;
+}
+
+/* Sidebar */
+.sp-sidebar {
+  margin-top: 56px !important;
+  background: rgba(255,255,255,0.85) !important;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.03) !important;
+  border-right: 1px solid var(--sp-sidebar-border) !important;
+  min-width: 220px !important;
+  max-width: 260px !important;
+  padding: 2rem 1rem 1rem 1rem !important;
+  height: 100vh !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  z-index: 10 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1.5rem !important;
+}
+.sp-sidebar .sp-nav {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.5rem !important;
+}
+.sp-sidebar .sp-nav a {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  padding: 0.6rem 1rem !important;
+  border-radius: var(--sp-radius) !important;
+  color: var(--sp-text) !important;
+  text-decoration: none !important;
+  font-weight: 500 !important;
+  transition: background 0.15s, color 0.15s !important;
+  font-size: 1.05rem !important;
+}
+.sp-sidebar .sp-nav a.active, .sp-sidebar .sp-nav a:hover {
+  background: var(--sp-primary) !important;
+  color: #fff !important;
+}
+.sp-nav a span {
+  opacity: 0.5 !important;
+  font-size: 1.3em !important;
+  margin-right: 0.5em !important;
+}
+
+/* Main Content */
+.sp-main {
+  margin-left: 260px !important;
+  padding: 2rem 2rem 2rem 2rem !important;
+}
+
+/* Cards & Lists */
+.sp-card {
+  background: var(--sp-card-bg) !important;
+  border-radius: var(--sp-radius) !important;
+  box-shadow: var(--sp-card-shadow) !important;
+  padding: 2rem !important;
+  margin-bottom: 2rem !important;
+  border: 1px solid var(--sp-border) !important;
+}
+
+.sp-list {
+  background: var(--sp-card-bg) !important;
+  border-radius: var(--sp-radius) !important;
+  box-shadow: var(--sp-card-shadow) !important;
+  padding: 1rem 2rem !important;
+  margin-bottom: 2rem !important;
+  border: 1px solid var(--sp-border) !important;
+}
+
+.sp-list table {
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  font-size: 1.05rem !important;
+}
+.sp-list th, .sp-list td {
+  padding: 0.75rem 1rem !important;
+  text-align: left !important;
+  border-bottom: 1px solid var(--sp-border) !important;
+}
+.sp-list th {
+  color: var(--sp-text-light) !important;
+  font-weight: 600 !important;
+  background: #f8fafc !important;
+}
+.sp-list tr:last-child td {
+  border-bottom: none !important;
+}
+.sp-list td .sp-doc-emoji {
+  opacity: 0.7 !important;
+  margin-right: 0.5em !important;
+  font-size: 1.1em !important;
+}
+
+/* Buttons */
+.sp-btn, .sp-btn-primary {
+  border: none !important;
+  border-radius: var(--sp-radius) !important;
+  padding: 0.5rem 1.5rem !important;
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: background 0.15s, color 0.15s !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
+  outline: none !important;
+}
+.sp-btn-primary {
+  background: var(--sp-primary) !important;
+  color: #fff !important;
+}
+.sp-btn-primary:hover {
+  background: var(--sp-primary-hover) !important;
+}
+.sp-btn {
+  background: #f3f6fb !important;
+  color: var(--sp-text) !important;
+}
+.sp-btn:hover {
+  background: #e1e4e8 !important;
+}
+
+/* Forms */
+.sp-input, .sp-select {
+  border: 1px solid var(--sp-border) !important;
+  border-radius: var(--sp-radius) !important;
+  padding: 0.5rem 1rem !important;
+  font-size: 1rem !important;
+  background: #fff !important;
+  margin-bottom: 1rem !important;
+  width: 100% !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Misc */
+.sp-section-title {
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 1rem !important;
+  color: var(--sp-primary) !important;
+  letter-spacing: 0.01em !important;
+}
+
+.sp-divider {
+  border-bottom: 1px solid var(--sp-border) !important;
+  margin: 2rem 0 !important;
+}
+
+/* Remove Tailwind background gradients and border radius */
+.bg-gradient-to-br, .from-gray-50, .to-teal-50, .rounded-lg, .rounded-md, .rounded, .shadow-sm, .shadow-lg, .border-b, .border-teal-100 {
+  background: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* Remove Tailwind border, bg, and radius */
+.border-2, .border-dashed, .border-gray-300, .rounded-lg, .rounded-full, .rounded, .bg-white, .bg-gradient-to-br, .from-gray-50, .to-teal-50 {
+  border: none !important;
+  background: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+} 

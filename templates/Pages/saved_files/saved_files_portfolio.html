@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>    <title>Forms - Form Management System</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/white-logo.png') }}" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Material Icons for portfolio displays -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/saved_files.css') }}">
+    <style>
+        /* Additional styles for portfolio view */
+        .portfolio-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .portfolio-item {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .portfolio-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background-color: rgba(1, 159, 172, 0.05);
+            border-bottom: 1px solid rgba(1, 159, 172, 0.1);
+        }
+        
+        .portfolio-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+        
+        .portfolio-id {
+            font-size: 0.8rem;
+            color: #666;
+            background-color: rgba(1, 159, 172, 0.1);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+        
+        .surface-file, .filled-forms {
+            padding: 1rem;
+        }
+        
+        .filled-forms h4 {
+            margin-top: 0;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+            color: #555;
+        }
+        
+        .filled-forms-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .no-surface-file, .no-filled-forms {
+            padding: 1rem;
+            text-align: center;
+            color: #666;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+        
+        .badge-warning {
+            background-color: #fcd34d;
+            color: #92400e;
+        }
+        
+        .badge-success {
+            background-color: #10b981;
+            color: #fff;
+        }
+        
+        .badge-info {
+            background-color: #3b82f6;
+            color: #fff;
+        }
+        
+        .legacy-warning {
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            background-color: rgba(251, 191, 36, 0.1);
+            border-left: 4px solid #fcd34d;
+            color: #92400e;
+            border-radius: 4px;
+        }
+        
+        /* Metadata modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-body {
+            padding: 1rem;
+        }
+        
+        .modal-footer {
+            padding: 1rem;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .close-button {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-icon">
+            <img src="{{ url_for('static', filename='images/white-logo.png') }}" alt="Logo" style="max-width: 100%; height: auto; max-height: 60px; object-fit: contain;" />
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('home') }}" class="nav-item {% if request.endpoint == 'home' %}active{% endif %}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                Dashboard
+            </a>
+            <a href="{{ url_for('saved_files') }}" class="nav-item active">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                Forms
+            </a>
+            <a href="{{ url_for('submissions') }}" class="nav-item {% if request.endpoint == 'submissions' %}active{% endif %}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                </svg>
+                Submissions
+            </a>
+            <a href="{{ url_for('analytics') }}" class="nav-item {% if request.endpoint == 'analytics' %}active{% endif %}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
+                Analytics
+            </a>
+            <a href="{{ url_for('start_editing') }}" class="nav-item {% if request.endpoint == 'start_editing' %}active{% endif %}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                Create
+            </a>
+            <a href="{{ url_for('settings') }}" class="nav-item {% if request.endpoint == 'settings' %}active{% endif %}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+                Settings
+            </a>
+        </nav>
+        
+        <div style="margin-top: auto; padding: 1rem 0;">
+            <button id="sidebar-logout-btn" class="nav-item" style="border: none; background: none; cursor: pointer; width: 100%;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                Logout
+            </button>
+        </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-container">
+        <div class="header">
+            <h1 class="page-title">Forms</h1>
+            <div class="actions">
+                <div class="search-container">
+                    <input id="search-input" class="search-input" type="text" placeholder="Search forms..." autocomplete="off">
+                    <div id="search-results" class="search-results" style="display:none;"></div>
+                </div>
+                <div class="avatar">{{ session['user_email'][0]|upper }}</div>
+                <button id="top-logout-btn" class="button">Logout</button>
+            </div>
+        </div>
+        
+        <!-- Form Portfolios Section -->
+        <div class="content-card">
+            <div class="file-section-header">
+                <h2>Form Portfolios</h2>
+            </div>
+            <div id="portfolios" class="portfolio-container">
+                {% if portfolios %}
+                    {% for portfolio in portfolios %}
+                    <div class="portfolio-item">
+                        <div class="portfolio-header">
+                            <h3>{{ portfolio.base_file.name }}</h3>
+                            <span class="portfolio-id">Portfolio ID: {{ portfolio.id }}</span>
+                        </div>
+                        
+                        {% if portfolio.surface_file %}
+                        <div class="surface-file">
+                            <div class="file-item">
+                                <div class="file-info">
+                                    <i class="material-icons" style="color: var(--primary-color); margin-right: 10px;">description</i>
+                                    <div class="file-details">
+                                        <h3>{{ portfolio.surface_file.name }}</h3>
+                                        <p>{{ portfolio.surface_file.upload_date }} • Form Template</p>
+                                    </div>
+                                </div>
+                                <div class="file-actions">
+                                    <button onclick="openForFilling('{{ portfolio.surface_file.id }}', '{{ portfolio.id }}')" class="file-action-btn" title="Fill Form">
+                                        <i class="material-icons">edit</i>
+                                    </button>
+                                    <button onclick="openInDesigner('{{ portfolio.base_file.id }}')" class="file-action-btn" title="Edit Template">
+                                        <i class="material-icons">design_services</i>
+                                    </button>
+                                    <button onclick="downloadFile('{{ portfolio.surface_file.id }}')" class="file-action-btn" title="Download Template">
+                                        <i class="material-icons">download</i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="no-surface-file">
+                            <p>No form template created yet</p>
+                            <button onclick="openInDesigner('{{ portfolio.base_file.id }}')" class="button button-primary">
+                                <i class="material-icons" style="margin-right: 5px;">design_services</i>
+                                Design Form
+                            </button>
+                        </div>
+                        {% endif %}
+                        
+                        {% if portfolio.filled_forms %}
+                        <div class="filled-forms">
+                            <h4>Filled Forms ({{ portfolio.filled_forms|length }})</h4>
+                            <div class="filled-forms-list">
+                                {% for form in portfolio.filled_forms %}
+                                <div class="file-item">
+                                    <div class="file-info">
+                                        <i class="material-icons" style="color: #4c956c; margin-right: 10px;">assignment_turned_in</i>
+                                        <div class="file-details">
+                                            <h3>{{ form.name }}</h3>
+                                            <p>{{ form.filled_date }} • Filled Form</p>
+                                        </div>
+                                    </div>
+                                    <div class="file-actions">
+                                        <button onclick="viewFilledForm('{{ form.id }}', '{{ form.submission_id }}')" class="file-action-btn" title="View">
+                                            <i class="material-icons">visibility</i>
+                                        </button>
+                                        <button onclick="downloadFilledForm('{{ form.id }}')" class="file-action-btn" title="Download">
+                                            <i class="material-icons">download</i>
+                                        </button>
+                                        <button onclick="viewMetadata('{{ form.id }}', {{ form.metadata|tojson|safe }})" class="file-action-btn" title="View Metadata">
+                                            <i class="material-icons">info</i>
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="no-filled-forms">
+                            <p>No filled forms yet</p>
+                            {% if portfolio.surface_file %}
+                            <button onclick="openForFilling('{{ portfolio.surface_file.id }}', '{{ portfolio.id }}')" class="button button-secondary">
+                                <i class="material-icons" style="margin-right: 5px;">edit</i>
+                                Fill Form
+                            </button>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="material-icons" style="font-size: 48px; color: var(--secondary-color); display: block; margin: 0 auto 1rem auto;">folder</i>
+                        <p>No form portfolios found. Upload a PDF to start creating forms.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Upload New Form section -->
+        <div class="content-card">
+            <div class="header" style="margin-bottom:1rem;">
+                <h2 style="font-size:1.25rem; font-weight:500;">Upload New Form</h2>
+            </div>
+            <div id="drop-zone" style="border:2px dashed #b7c2bd; border-radius:8px; background:rgba(255,255,255,0.95); padding:2rem; text-align:center;">
+                <div style="margin-bottom:1.5rem;">
+                    <i class="material-icons" style="font-size: 48px; color: var(--primary-color); display: block; margin: 0 auto 1rem auto;">cloud_upload</i>
+                    <div style="color:var(--primary-color);">
+                        <p style="font-weight:500;">Drag and drop your files here</p>
+                        <p style="font-size:0.95em;">or</p>
+                    </div>
+                    <button id="browse-files" class="button">Browse Files</button>
+                    <input type="file" id="fileinput" style="display:none;" accept=".docx,.pdf" multiple>
+                </div>
+            </div>
+            <div id="upload-progress" style="margin-top:1.5rem; display:none;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                    <span style="font-size:0.95em; font-weight:500; color:var(--primary-color);" id="upload-status">Uploading...</span>
+                    <span style="font-size:0.95em; font-weight:500; color:var(--primary-color);" id="upload-percentage">0%</span>
+                </div>
+                <div style="width:100%; background:var(--secondary-color); border-radius:8px; height:8px;">
+                    <div id="progress-bar" style="background:var(--primary-color); height:8px; border-radius:8px; transition:width 0.3s; width:0%;"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Legacy Files section -->
+        <div class="content-card">
+            <div class="file-section-header">
+                <h2>Legacy Files</h2>
+            </div>
+            <div id="legacyFiles" class="file-list-container">
+                {% if legacy_files or legacy_created_files or legacy_filled_forms %}
+                <div class="legacy-warning">
+                    <p>These files were created with the previous version of the system and may not work with the new form portfolio approach.</p>
+                </div>
+                
+                {% if legacy_files %}
+                <h4>Uploaded Files</h4>
+                {% for file in legacy_files %}
+                <div class="file-item">
+                    <div class="file-info">
+                        <i class="material-icons" style="margin-right: 10px;">insert_drive_file</i>
+                        <div class="file-details">
+                            <h3>{{ file.name }} <span class="badge badge-warning">Legacy</span></h3>
+                            <p>{{ file.upload_date }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+                
+                {% if legacy_created_files %}
+                <h4>Created Templates</h4>
+                {% for file in legacy_created_files %}
+                <div class="file-item">
+                    <div class="file-info">
+                        <i class="material-icons" style="margin-right: 10px;">description</i>
+                        <div class="file-details">
+                            <h3>{{ file.name }} <span class="badge badge-warning">Legacy Template</span></h3>
+                            <p>{{ file.upload_date }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+                
+                {% if legacy_filled_forms %}
+                <h4>Filled Forms</h4>
+                {% for form in legacy_filled_forms %}
+                <div class="file-item">
+                    <div class="file-info">
+                        <i class="material-icons" style="margin-right: 10px;">assignment</i>
+                        <div class="file-details">
+                            <h3>{{ form.name }} <span class="badge badge-warning">Legacy Filled Form</span></h3>
+                            <p>{{ form.filled_date }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+                
+                {% else %}
+                <div class="empty-state">
+                    <i class="material-icons" style="font-size: 48px; color: var(--secondary-color); display: block; margin: 0 auto 1rem auto;">folder_off</i>
+                    <p>No legacy files found.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+
+    <!-- Metadata Modal -->
+    <div id="metadata-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Form Metadata</h2>
+                <button class="close-button">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="metadata-content"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="button" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/filemanager.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Logout button functionality
+            const topLogoutBtn = document.getElementById('top-logout-btn');
+            const sidebarLogoutBtn = document.getElementById('sidebar-logout-btn');
+            
+            [topLogoutBtn, sidebarLogoutBtn].forEach(btn => {
+                if (btn) {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        
+                        // Create fade-out overlay
+                        const overlay = document.createElement('div');
+                        overlay.style.position = 'fixed';
+                        overlay.style.top = '0';
+                        overlay.style.left = '0';
+                        overlay.style.width = '100%';
+                        overlay.style.height = '100%';
+                        overlay.style.backgroundColor = 'rgba(255, 255, 255, 0)';
+                        overlay.style.transition = 'background-color 0.5s ease';
+                        overlay.style.zIndex = '9999';
+                        document.body.appendChild(overlay);
+                        
+                        // Fade out
+                        setTimeout(() => {
+                            overlay.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                            setTimeout(() => {
+                                window.location.href = "{{ url_for('logout') }}";
+                            }, 400);
+                        }, 50);
+                    });
+                }
+            });
+            
+            // Modal functionality
+            const modal = document.getElementById('metadata-modal');
+            const closeBtn = document.querySelector('.close-button');
+            
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closeModal);
+            }
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    closeModal();
+                }
+            });
+            
+            // Initialize drag and drop upload functionality
+            initializeFileUpload();
+        });
+        
+        // Portfolio-specific functions
+        function openInDesigner(fileId) {
+            window.location.href = "{{ url_for('design_page', file_id='ID_PLACEHOLDER') }}".replace('ID_PLACEHOLDER', fileId);
+        }
+        
+        function openForFilling(fileId, portfolioId) {
+            // Store portfolio ID for use in the form filling page
+            localStorage.setItem('portfolioId', portfolioId);
+            window.location.href = "{{ url_for('edit_file', file_id='ID_PLACEHOLDER') }}".replace('ID_PLACEHOLDER', fileId);
+        }
+        
+        function viewFilledForm(formId, submissionId) {
+            // Navigate to the filled form view page
+            window.location.href = "{{ url_for('view_file', file_id='ID_PLACEHOLDER') }}".replace('ID_PLACEHOLDER', formId);
+        }
+        
+        function downloadFilledForm(formId) {
+            window.location.href = "{{ url_for('download_file_route', file_id='ID_PLACEHOLDER') }}".replace('ID_PLACEHOLDER', formId);
+        }
+        
+        function viewMetadata(formId, metadata) {
+            // Display metadata in modal
+            const metadataContent = document.getElementById('metadata-content');
+            metadataContent.innerHTML = '';
+            
+            // Format metadata nicely
+            if (metadata) {
+                const metadataTable = document.createElement('table');
+                metadataTable.className = 'metadata-table';
+                metadataTable.style.width = '100%';
+                metadataTable.style.borderCollapse = 'collapse';
+                
+                // Add each metadata entry
+                Object.entries(metadata).forEach(([key, value]) => {
+                    const row = document.createElement('tr');
+                    
+                    const keyCell = document.createElement('td');
+                    keyCell.textContent = key;
+                    keyCell.style.padding = '8px';
+                    keyCell.style.borderBottom = '1px solid #e5e7eb';
+                    keyCell.style.fontWeight = '500';
+                    keyCell.style.width = '40%';
+                    
+                    const valueCell = document.createElement('td');
+                    valueCell.textContent = typeof value === 'object' ? JSON.stringify(value) : value;
+                    valueCell.style.padding = '8px';
+                    valueCell.style.borderBottom = '1px solid #e5e7eb';
+                    
+                    row.appendChild(keyCell);
+                    row.appendChild(valueCell);
+                    metadataTable.appendChild(row);
+                });
+                
+                metadataContent.appendChild(metadataTable);
+            } else {
+                metadataContent.innerHTML = '<p>No metadata available for this form.</p>';
+            }
+            
+            // Show modal
+            const modal = document.getElementById('metadata-modal');
+            modal.style.display = 'flex';
+        }
+        
+        function closeModal() {
+            const modal = document.getElementById('metadata-modal');
+            modal.style.display = 'none';
+        }
+        
+        // Initialize file upload via drag & drop
+        function initializeFileUpload() {
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('fileinput');
+            const browseBtn = document.getElementById('browse-files');
+            
+            // File input change handler
+            fileInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    uploadFiles(this.files);
+                }
+            });
+            
+            // Browse button click handler
+            browseBtn.addEventListener('click', function() {
+                fileInput.click();
+            });
+            
+            // Drag & drop handlers
+            if (dropZone) {
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    dropZone.addEventListener(eventName, preventDefaults, false);
+                });
+                
+                function preventDefaults(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    dropZone.addEventListener(eventName, highlight, false);
+                });
+                
+                ['dragleave', 'drop'].forEach(eventName => {
+                    dropZone.addEventListener(eventName, unhighlight, false);
+                });
+                
+                function highlight() {
+                    dropZone.style.backgroundColor = 'rgba(1, 159, 172, 0.05)';
+                    dropZone.style.borderColor = 'var(--primary-color)';
+                }
+                
+                function unhighlight() {
+                    dropZone.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+                    dropZone.style.borderColor = '#b7c2bd';
+                }
+                
+                // Handle file drop
+                dropZone.addEventListener('drop', function(e) {
+                    const files = e.dataTransfer.files;
+                    uploadFiles(files);
+                });
+            }
+            
+            // Upload files function
+            function uploadFiles(files) {
+                if (files.length === 0) return;
+                
+                const uploadProgress = document.getElementById('upload-progress');
+                const progressBar = document.getElementById('progress-bar');
+                const uploadStatus = document.getElementById('upload-status');
+                const uploadPercentage = document.getElementById('upload-percentage');
+                
+                // Show progress bar
+                uploadProgress.style.display = 'block';
+                
+                // Create FormData
+                const formData = new FormData();
+                for (let i = 0; i < files.length; i++) {
+                    formData.append('file', files[i]);
+                }
+                
+                // Create and send request
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', "{{ url_for('upload_document') }}", true);
+                
+                // Upload progress handler
+                xhr.upload.addEventListener('progress', function(e) {
+                    if (e.lengthComputable) {
+                        const percentComplete = Math.round((e.loaded / e.total) * 100);
+                        progressBar.style.width = percentComplete + '%';
+                        uploadPercentage.textContent = percentComplete + '%';
+                        uploadStatus.textContent = 'Uploading...';
+                    }
+                });
+                
+                // Load handler
+                xhr.addEventListener('load', function() {
+                    if (xhr.status === 200 || xhr.status === 201) {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            uploadStatus.textContent = 'Upload complete!';
+                            // Redirect to the design page if available
+                            if (response.redirect_url) {
+                                setTimeout(() => {
+                                    window.location.href = response.redirect_url;
+                                }, 1000);
+                            } else {
+                                // Reload the page to show new file
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 1000);
+                            }
+                        } else {
+                            uploadStatus.textContent = 'Upload failed: ' + (response.error || 'Unknown error');
+                        }
+                    } else {
+                        uploadStatus.textContent = 'Upload failed: Server error';
+                    }
+                });
+                
+                // Error handler
+                xhr.addEventListener('error', function() {
+                    uploadStatus.textContent = 'Upload failed: Network error';
+                });
+                
+                // Send the request
+                xhr.send(formData);
+            }
+        }
+    </script>
+</body>
+</html>

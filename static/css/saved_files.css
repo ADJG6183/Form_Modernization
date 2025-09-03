@@ -1,0 +1,105 @@
+.file-list-container {
+    margin-top: 1rem;
+}
+
+.file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--secondary-color);
+    transition: background-color 0.2s;
+}
+
+.file-item:hover {
+    background-color: rgba(84, 193, 198, 0.05);
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.file-icon {
+    color: var(--primary-color);
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.file-details h3 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.file-details p {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.8rem;
+    color: var(--secondary-color);
+}
+
+.file-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.file-action-btn {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--primary-light);
+    transition: color 0.2s, background-color 0.2s;
+}
+
+.file-action-btn:hover {
+    background-color: rgba(1, 159, 172, 0.1);
+    color: var(--primary-color);
+}
+
+.file-action-btn.delete {
+    color: #e57373;
+}
+
+.file-action-btn.delete:hover {
+    background-color: rgba(229, 115, 115, 0.1);
+    color: #d32f2f;
+}
+
+.file-action-btn.download {
+    color: #54c1c6;
+}
+
+.file-action-btn.download:hover {
+    background-color: rgba(84, 193, 198, 0.1);
+    color: #019fac;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--secondary-color);
+}
+
+.file-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--secondary-color);
+}
+
+.file-section-header h2 {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin: 0;
+}
+
+.file-actions-header {
+    display: flex;
+    gap: 0.5rem;
+}

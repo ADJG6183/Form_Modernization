@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>    
+    <title>{{ 'Edit' if editing_filled_form else 'Fill' }} Form - Form Management System</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/white-logo.png') }}" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/editpage.css') }}">
+    <!-- Material Icons for portfolio approach -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        .edit-mode-badge {
+            display: inline-block;
+            background-color: #019fac;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .panel-header h2 {
+            margin-right: auto;
+        }
+    </style>
+    <!-- PDF.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <!-- PDF-Lib for form manipulation -->
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <!-- Signature Pad library -->
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+    <!-- PDF Error Reporter -->
+    <script src="{{ url_for('static', filename='js/pdf-error-reporter.js') }}"></script>
+</head>
+<body data-file-id="{{ file.id if file else '' }}">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-icon">
+            <img src="{{ url_for('static', filename='images/white-logo.png') }}" alt="Logo" style="max-width: 100%; height: auto; max-height: 60px; object-fit: contain;" />
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('home') }}" class="nav-item {% if request.endpoint == 'home' %}active{% endif %}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                Dashboard
+            </a>
+            <a href="{{ url_for('saved_files') }}" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                Forms
+            </a>
+            <a href="{{ url_for('submissions') }}" class="nav-item {% if request.endpoint == 'submissions' %}active{% endif %}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                </svg>
+                Submissions
+            </a>
+        </nav>
+        
+        <div style="margin-top: auto; padding: 1rem 0;">
+            <button id="sidebar-logout-btn" class="nav-item" style="border: none; background: none; cursor: pointer; width: 100%;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                Logout
+            </button>
+        </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-container">
+        <div class="header">
+            <h1 class="page-title">{{ 'Edit' if editing_filled_form else 'Fill' }} Form: {{ file.original_filename if file else 'No File' }}</h1>
+            <div class="actions">
+                <button id="save-btn" class="button button-primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                        <polyline points="7 3 7 8 15 8"></polyline>
+                    </svg>
+                    {{ 'Update Form' if editing_filled_form else 'Save Form' }}
+                </button>
+                <a href="{{ url_for('saved_files') }}" class="button button-secondary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    Back to Forms
+                </a>
+                <button id="debug-btn" class="button button-secondary" title="Open Diagnostics">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        <circle cx="12" cy="10" r="2"></circle>
+                    </svg>
+                    Diagnostics
+                </button>
+            </div>
+        </div>
+        
+        <div class="editor-container">
+            <!-- Left Panel: Form Fields -->
+            <div class="fields-panel">
+                <div class="panel-header">
+                    <h2>Form Fields</h2>
+                    {% if editing_filled_form %}
+                    <div class="edit-mode-badge">Editing Existing Form</div>
+                    {% endif %}
+                </div>
+                <div class="panel-content">
+                    <div id="fields-container" class="fields-scrollable">
+                        {% if schema and schema.fields %}
+                            {% for field in schema.fields %}
+                            <div class="field-item" data-field-id="{{ field.id }}">
+                                <div class="field-name">{{ field.label }}</div>
+                                <div class="field-type">{{ field.type }}</div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="no-fields">No form fields defined yet. <a href="{{ url_for('design_page', file_id=file.id) }}">Design form</a> first.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Center: PDF Viewer -->
+            <div class="pdf-viewer-container">
+                <div class="toolbar">
+                    <div class="toolbar-group">
+                        <button id="prev-page" class="toolbar-btn" title="Previous Page">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="15 18 9 12 15 6"></polyline>
+                            </svg>
+                        </button>
+                        <div class="page-nav">
+                            Page <input id="page-number" type="number" min="1" value="1" class="page-input"> of <span id="page-count">1</span>
+                        </div>
+                        <button id="next-page" class="toolbar-btn" title="Next Page">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-group text-formatting">
+                        <select id="font-family" class="toolbar-select" title="Font Family">
+                            <option value="Helvetica">Helvetica</option>
+                            <option value="Times">Times</option>
+                            <option value="Courier">Courier</option>
+                        </select>
+                        
+                        <select id="font-size" class="toolbar-select" title="Font Size">
+                            <option value="8">8</option>
+                            <option value="10">10</option>
+                            <option value="12" selected>12</option>
+                            <option value="14">14</option>
+                            <option value="16">16</option>
+                            <option value="18">18</option>
+                            <option value="20">20</option>
+                            <option value="24">24</option>
+                        </select>
+                        
+                        <div class="toolbar-btn-group">
+                            <button id="bold-btn" class="toolbar-btn" title="Bold">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
+                                    <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
+                                </svg>
+                            </button>
+                            <button id="italic-btn" class="toolbar-btn" title="Italic">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="19" y1="4" x2="10" y2="4"></line>
+                                    <line x1="14" y1="20" x2="5" y2="20"></line>
+                                    <line x1="15" y1="4" x2="9" y2="20"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <input type="color" id="text-color" class="color-picker" title="Text Color" value="#000000">
+                    </div>
+                    
+                    <div class="toolbar-group">
+                        <button id="zoom-in" class="toolbar-btn" title="Zoom In">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                <line x1="11" y1="8" x2="11" y2="14"></line>
+                                <line x1="8" y1="11" x2="14" y2="11"></line>
+                            </svg>
+                        </button>
+                        <button id="zoom-out" class="toolbar-btn" title="Zoom Out">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                <line x1="8" y1="11" x2="14" y2="11"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="pdf-container">
+                    <canvas id="pdf-canvas"></canvas>
+                    <div id="pdf-error" class="hidden">
+                        <p id="pdf-error-message"></p>
+                        <div class="debug-hint" style="padding: 20px; background: #f8f9fa; margin-top: 20px; border-left: 4px solid #007bff;">
+                            <h3>Troubleshooting PDF Loading</h3>
+                            <p>If the PDF fails to load, you can use these troubleshooting steps:</p>
+                            <ol>
+                                <li>Check that you are properly logged in</li>
+                                <li>Verify that a template exists for this portfolio</li>
+                                <li>Try accessing the <a href="/diagnostics/test-pdf/{{portfolio.id if portfolio else '0'}}" target="_blank">diagnostics page</a> for this PDF</li>
+                            </ol>
+                        </div>
+                    </div>
+                    <div id="pdf-loading" class="loading-overlay">
+                        <p>Loading PDF form...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Panel: Properties -->
+            <div class="properties-panel">
+                <div class="panel-header">
+                    <h2>Properties</h2>
+                </div>
+                <div class="panel-content">
+                    <div class="property-group">
+                        <h3>Form Information</h3>
+                        <div class="property-item">
+                            <label>Form Name</label>
+                            <div class="property-value">{{ file.original_filename if file else 'Untitled Form' }}</div>
+                        </div>
+                        <div class="property-item">
+                            <label>Field Count</label>
+                            <div id="field-count" class="property-value">{{ schema.fields|length if schema and schema.fields else 0 }}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- JSON Schema Form Fields -->
+                    <div class="property-group">
+                        <h3>Form Fields</h3>
+                        <div id="json-form-fields">
+                            {% if schema and schema.fields %}
+                                {% for field in schema.fields %}
+                                <div class="form-field-item" data-field-id="{{ field.id }}">
+                                    <label for="field_{{ field.id }}">{{ field.label }}</label>
+                                    
+                                    {% if field.type == 'text' %}
+                                        <input type="text" id="field_{{ field.id }}" 
+                                               class="form-input" 
+                                               placeholder="{{ field.placeholder|default('') }}"
+                                               data-field-name="{{ field.name }}"
+                                               data-field-type="{{ field.type }}"
+                                               value="{{ field.defaultValue|default('') }}">
+                                    
+                                    {% elif field.type == 'textarea' %}
+                                        <textarea id="field_{{ field.id }}"
+                                                  class="form-input" 
+                                                  placeholder="{{ field.placeholder|default('') }}"
+                                                  data-field-name="{{ field.name }}"
+                                                  data-field-type="{{ field.type }}"
+                                                  rows="3">{{ field.defaultValue|default('') }}</textarea>
+                                    
+                                    {% elif field.type == 'checkbox' %}
+                                        <input type="checkbox" id="field_{{ field.id }}"
+                                               class="form-checkbox"
+                                               data-field-name="{{ field.name }}"
+                                               data-field-type="{{ field.type }}"
+                                               {% if field.defaultValue %}checked{% endif %}>
+                                    
+                                    {% elif field.type == 'select' %}
+                                        <select id="field_{{ field.id }}"
+                                                class="form-select"
+                                                data-field-name="{{ field.name }}"
+                                                data-field-type="{{ field.type }}">
+                                            {% if field.options %}
+                                                {% for option in field.options %}
+                                                    <option value="{{ option.value }}" 
+                                                            {% if option.value == field.defaultValue %}selected{% endif %}>
+                                                        {{ option.label }}
+                                                    </option>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </select>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="no-fields-message">
+                                    <p>No form fields defined yet. <a href="{{ url_for('design_page', file_id=file.id) }}">Go to Design Page</a> to create form fields.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="property-group">
+                        <h3>Instructions</h3>
+                        <ol class="instructions-list">
+                            <li>Fill in the form fields in the panel above</li>
+                            <li>Review the document to ensure all information is correct</li>
+                            <li>Click <strong>Save Form</strong> when you're done</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Save Modal -->
+    <div id="save-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>{{ 'Update' if editing_filled_form else 'Save' }} Filled Form</h2>
+            <div class="form-group">
+                <label for="save-filename">Filename:</label>
+                <input type="text" id="save-filename" value="filled_form.pdf" class="form-control">
+            </div>
+            <div class="modal-buttons">
+                <button id="cancel-save" class="button button-secondary">Cancel</button>
+                <button id="confirm-save" class="button button-primary">{{ 'Update' if editing_filled_form else 'Save' }}</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification container - will be created dynamically -->
+    <div id="notification-container"></div>
+    
+    <script>
+    // Set the PDF Worker path for PDF.js (this needs to be global)
+    if (typeof pdfjsLib !== 'undefined') {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js";
+    }
+    
+    // Use IIFE to avoid variable name conflicts with external scripts
+    (function() {
+    // Add these variables to the window object so external scripts can access them
+    window.APP = window.APP || {};
+    window.APP.fileUrl = "{{ file_url if file_url else url_for('serve_pdf', file_id=file.id) if file else '' }}";
+    window.APP.fileId = "{{ file.id if file else '' }}";
+    window.APP.hasJsonSchema = {% if schema and schema.fields %}true{% else %}false{% endif %};
+    window.APP.editingFilledForm = {% if editing_filled_form %}true{% else %}false{% endif %};
+    window.APP.filledFormId = "{{ filled_form_id if filled_form_id else '' }}";
+    // Check for portfolio ID from multiple sources
+    const storedPortfolioId = localStorage.getItem('portfolioId');
+    console.log('Portfolio ID from localStorage:', storedPortfolioId);
+    window.APP.portfolioId = "{{ portfolio.id if portfolio else '' }}" || storedPortfolioId;
+    console.log('Using portfolio ID:', window.APP.portfolioId);
+    
+    // Form data storage for JSON schema
+    window.APP.jsonFormData = {};
+    
+    // Document ready function - we'll initialize JSON schema form handling here
+    // and let the external script handle PDF viewing
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("Document loaded. Schema support ready.");
+        
+        // Initialize JSON schema form fields
+        initializeJsonFormFields();
+        
+        // Initialize save functionality
+        initSaveFunction();
+        
+        // Connect the save button to our save function
+        const saveBtn = document.getElementById('save-btn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', function() {
+                showSaveModal();
+            });
+        }
+    });
+    
+    // Initialize JSON schema form fields
+    function initializeJsonFormFields() {
+        // Add event listeners to all JSON schema form fields
+        const formFields = document.querySelectorAll('.form-field-item input, .form-field-item textarea, .form-field-item select');
+        formFields.forEach(field => {
+            // Get initial values
+            const fieldName = field.dataset.fieldName;
+            let value;
+            
+            if (!fieldName) {
+                return; // Skip fields without a name
+            }
+            
+            if (field.type === 'checkbox') {
+                value = field.checked;
+            } else {
+                value = field.value;
+            }
+            
+            // Store initial value in the global APP object
+            window.APP.jsonFormData[fieldName] = value;
+            
+            // Add change listener
+            field.addEventListener('change', function() {
+                if (field.type === 'checkbox') {
+                    window.APP.jsonFormData[fieldName] = field.checked;
+                } else {
+                    window.APP.jsonFormData[fieldName] = field.value;
+                }
+                console.log(`Field ${fieldName} updated:`, window.APP.jsonFormData[fieldName]);
+            });
+        });
+        
+        console.log("JSON form fields initialized with data:", window.APP.jsonFormData);
+        
+        // Connect field items in the left panel to the form fields in the right panel
+        const fieldItems = document.querySelectorAll('.field-item');
+        fieldItems.forEach(item => {
+            item.addEventListener('click', function() {
+                // Remove active class from all fields
+                fieldItems.forEach(f => f.classList.remove('active'));
+                
+                // Add active class to selected field
+                this.classList.add('active');
+                
+                // Find and focus the corresponding input in the form panel
+                const fieldId = this.dataset.fieldId;
+                const inputField = document.querySelector(`.form-field-item[data-field-id="${fieldId}"] input, 
+                                                         .form-field-item[data-field-id="${fieldId}"] textarea, 
+                                                         .form-field-item[data-field-id="${fieldId}"] select`);
+                if (inputField) {
+                    inputField.focus();
+                }
+            });
+        });
+    }
+    
+    // Initialize save functionality
+    function initSaveFunction() {
+        const confirmSaveBtn = document.getElementById('confirm-save');
+        const cancelSaveBtn = document.getElementById('cancel-save');
+        
+        // Hide modal when cancel clicked
+        if (cancelSaveBtn) {
+            cancelSaveBtn.addEventListener('click', function() {
+                const saveModal = document.getElementById('save-modal');
+                if (saveModal) saveModal.style.display = 'none';
+            });
+        }
+        
+        // Handle save confirmation
+        if (confirmSaveBtn) {
+            confirmSaveBtn.addEventListener('click', function() {
+                const saveModal = document.getElementById('save-modal');
+                if (saveModal) saveModal.style.display = 'none';
+                saveJsonFormData();
+            });
+        }
+    }
+    
+    // Show save modal
+    function showSaveModal() {
+        if (!window.APP.hasJsonSchema) {
+            showNotification('No form schema defined. Please go to the Design page first.', 'error');
+            return;
+        }
+        
+        const saveModal = document.getElementById('save-modal');
+        const filenameInput = document.getElementById('save-filename');
+        
+        // Set default filename from original file if available
+        if (filenameInput) {
+            const originalName = "{{ file.original_filename if file else 'form' }}";
+            filenameInput.value = `filled_${originalName}`;
+        }
+        
+        if (saveModal) {
+            saveModal.style.display = 'flex';
+        }
+    }
+    
+    // Save form data to server
+    function saveJsonFormData() {
+        if (!window.APP.hasJsonSchema) {
+            showNotification('No form schema defined. Please go to the Design page first.', 'error');
+            return;
+        }
+        
+        // Create FormData object for multipart form submission
+        const formDataObj = new FormData();
+        const filenameInput = document.getElementById('save-filename');
+        const filename = filenameInput ? filenameInput.value : 'filled_form.pdf';
+        
+        // Convert JSON form data to field_values format for PyPDFForm
+        const fieldValues = {};
+        Object.keys(window.APP.jsonFormData).forEach(key => {
+            fieldValues[key] = window.APP.jsonFormData[key];
+        });
+        
+        // Add form data
+        formDataObj.append('sourceFileId', window.APP.fileId);
+        formDataObj.append('formData', JSON.stringify(fieldValues));
+        formDataObj.append('filename', filename);
+        
+        // If we're editing an existing filled form, include its ID
+        if (window.APP.editingFilledForm && window.APP.filledFormId) {
+            formDataObj.append('filledFormId', window.APP.filledFormId);
+            console.log(`Editing existing filled form: ${window.APP.filledFormId}`);
+        }
+        
+        // Show loading notification
+        showNotification('Saving form data...', 'info');
+        
+        // Submit the form data
+        fetch('{{ url_for("save_filled_form") }}', {
+            method: 'POST',
+            body: formDataObj
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showNotification('Form saved successfully!', 'success');
+                // Redirect to saved files page after short delay
+                setTimeout(() => {
+                    window.location.href = '{{ url_for("saved_files") }}';
+                }, 1500);
+            } else {
+                showNotification(`Error: ${data.error || 'Unknown error'}`, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error saving form:', error);
+            showNotification(`Error saving form: ${error.message}`, 'error');
+        });
+    }
+    
+    // Show notification - we're defining this here so we can use it in our code
+    // The function in editPage.js might have additional styling/features
+    function showNotification(message, type = 'info') {
+        // Check if the external script has defined this function
+        if (typeof window.showNotification === 'function') {
+            // Use external function if available
+            window.showNotification(message, type);
+            return;
+        }
+        
+        // Fallback implementation
+        const container = document.getElementById('notification-container');
+        
+        if (!container) {
+            console.error('Notification container not found');
+            return;
+        }
+        
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        
+        container.appendChild(notification);
+        
+        // Remove after 5 seconds
+        setTimeout(() => {
+            notification.classList.add('fade-out');
+            setTimeout(() => {
+                if (container.contains(notification)) {
+                    container.removeChild(notification);
+                }
+            }, 500);
+        }, 5000);
+    }
+    
+    // End of IIFE
+    })();
+    </script>
+    <!-- Only load one script based on approach -->
+    {% if use_portfolio_approach %}
+        <!-- New portfolio-based approach -->
+        <script src="{{ url_for('static', filename='js/editpage_portfolio.js') }}"></script>
+    {% else %}
+        <!-- Legacy script for backward compatibility -->
+        <script src="{{ url_for('static', filename='js/editPage.js') }}"></script>
+    {% endif %}
+    
+    <!-- Include debug modal -->
+    {% include 'Pages/f_builder/debug-modal.html' %}
+</body>
+</html>

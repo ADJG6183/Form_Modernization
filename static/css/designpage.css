@@ -1,0 +1,251 @@
+.canvas-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: calc(100vh - 2rem);
+    padding: 2rem;
+}
+
+.editor-sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--dark-bg);
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem 0;
+}
+
+.editor-tools {
+    width: 280px;
+    background: var(--white);
+    border-right: 1px solid rgba(0,0,0,0.05);
+    position: fixed;
+    left: var(--sidebar-width);
+    top: 64px;
+    bottom: 0;
+    z-index: 30;
+    box-shadow: var(--card-shadow);
+}
+
+.editor-content {
+    margin-left: calc(var(--sidebar-width) + 280px);
+    margin-top: 64px;
+    background-color: #f5f7fa;
+    width: calc(100% - var(--sidebar-width) - 280px);
+    min-height: calc(100vh - 64px);
+    position: relative;
+}
+
+.editor-header {
+    position: fixed;
+    top: 0;
+    left: var(--sidebar-width);
+    right: 0;
+    height: 64px;
+    background: var(--white);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    z-index: 40;
+    box-shadow: var(--card-shadow);
+}
+
+.tool-button {
+    background: transparent;
+    border: none;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    color: var(--white);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.tool-button:hover {
+    background-color: rgba(255,255,255,0.1);
+}
+
+.tool-button.active {
+    background-color: rgba(255,255,255,0.2);
+}
+
+#pdf-page {
+    transition: transform 0.2s ease;
+}
+
+/* #pdf-page {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(90deg, rgba(250,250,250,0.5) 1px, transparent 1px),
+                linear-gradient(rgba(250,250,250,0.5) 1px, transparent 1px);
+    background-size: 20px 20px;
+} */
+
+#pdf-canvas {
+    touch-action: none;
+    cursor: default;
+}
+
+#elements-container {
+    pointer-events: none;
+}
+
+#elements-container > * {
+    pointer-events: auto;
+}
+
+/* Add a subtle page curl effect */
+#pdf-page::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 0 20px 20px;
+    border-color: transparent transparent #f0f0f0 transparent;
+    box-shadow: -2px -2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 0 0 5px 0;
+}
+
+.tool-btn {
+    transition: all 0.2s ease;
+}
+
+.form-field-btn {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    background: transparent;
+    border: 1px solid var(--secondary-color);
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    color: var(--text-color);
+    transition: all 0.2s ease;
+    margin-bottom: 0.75rem;
+}
+
+.form-field-btn:hover {
+    background-color: rgba(1, 159, 172, 0.05);
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
+}
+
+.form-field-btn .icon {
+    margin-right: 0.75rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-label input {
+    margin-right: 0.5rem;
+}
+
+/* Make the PDF controls match the modern theme */
+#page-number {
+    border: 1px solid var(--secondary-color);
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    width: 3rem;
+    text-align: center;
+}
+
+#page-number:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+/* Make sure the canvas fits well within the container */
+.pdf-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 1rem;
+}
+
+.tool-btn.active {
+    background-color: rgb(229, 231, 235);
+    color: rgb(13, 148, 136);
+}
+
+/* Smooth scrolling for sidebar */
+.overflow-y-auto {
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar {
+    width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+    background-color: rgba(156, 163, 175, 0.5);
+    border-radius: 3px;
+}
+
+/* Logo styles */
+.w-64 img {
+    transition: all 0.3s ease;
+}
+
+.w-64 img:hover {
+    transform: scale(1.05);
+}
+
+/* Sidebar spacing */
+.mt-24 {
+    margin-top: 6rem;
+}
+
+.form-field {
+    position: absolute;
+    cursor: move;
+    user-select: none;
+}
+
+.field-box {
+    padding: 8px;
+    border: 2px dashed #2563eb;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: 4px;
+    font-size: 14px;
+    min-width: 100px;
+}
+
+.field-box.signature {
+    border-color: #059669;
+    background: rgba(5, 150, 105, 0.1);
+}
+
+.field-box.checkbox {
+    border-color: #7c3aed;
+    background: rgba(124, 58, 237, 0.1);
+}
+
+.field-box.number {
+    border-color: #dc2626;
+    background: rgba(220, 38, 38, 0.1);
+}

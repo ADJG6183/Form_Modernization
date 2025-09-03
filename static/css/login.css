@@ -1,0 +1,75 @@
+body,
+h2,
+label,
+input,
+button {
+    font-family: 'DM Sans', 'Segoe UI', Arial, sans-serif;
+    letter-spacing: 0.5px;
+}
+
+input::placeholder {
+    color: #9CA3AF;
+}
+
+.bg-gradient-to-br {
+    background: linear-gradient(135deg, 
+        rgba(64, 224, 208, 0.3) 0%, 
+        rgba(255, 255, 255, 0.9) 100%
+    );
+    min-height: 100vh;
+    background-attachment: fixed;
+}
+
+/* Add subtle animation */
+@keyframes gradientAnimation {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+body {
+    background-size: 200% 200%;
+    animation: gradientAnimation 15s ease infinite;
+}
+
+/* Smooth transitions */
+input, button {
+    transition: all 0.2s ease-in-out;
+}
+
+input[type="text"]:hover,
+input[type="email"]:hover,
+input[type="password"]:hover {
+    border-color: #2563eb; /* Tailwind blue-600 */
+    box-shadow: 0 0 0 2px #93c5fd; /* Tailwind blue-300 */
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:hover {
+    border-color: #60A5FA;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+/* Box shadow enhancement */
+.shadow-lg {
+    box-shadow: 0 10px 40px -12px rgba(0, 0, 0, 0.1);
+}
+
+.custom-gradient {
+    background: linear-gradient(135deg, 
+        rgba(0, 171, 189, 0.4) 0%, /* SHL turquoise */
+        rgba(0, 113, 235, 0.2) 100% /* SHL blue */
+    );
+    background-size: 200% 200%;
+    animation: gradientAnimation 15s ease infinite;
+    background-attachment: fixed;
+}

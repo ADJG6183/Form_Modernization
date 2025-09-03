@@ -1,0 +1,47 @@
+body {
+    font-family: 'DM Sans', 'Segoe UI', Arial, sans-serif;
+    letter-spacing: 0.5px;
+    min-height: 100vh;
+}
+body, h2, label, input, button {
+    font-family: 'DM Sans', 'Segoe UI', Arial, sans-serif;
+    letter-spacing: 0.5px;
+}
+
+h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1e7f74;
+    margin-bottom: 1rem;
+    text-align: center;
+    letter-spacing: 0.5px;
+    transition: color 0.3s;
+}
+/* Box shadow enhancement */
+.shadow-lg {
+    box-shadow: 0 10px 40px -12px rgba(0, 0, 0, 0.1);
+}
+
+/* Keep the gradient animation */
+@keyframes gradientAnimation {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.custom-gradient {
+    background: linear-gradient(135deg, 
+        rgba(0, 171, 189, 0.4) 0%, /* SHL turquoise */
+        rgba(0, 113, 235, 0.2) 100% /* SHL blue */
+    );
+    background-size: 200% 200%;
+    animation: gradientAnimation 15s ease infinite;
+    background-attachment: fixed;
+}
+

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Preview - {{ file.original_filename }}</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/white-logo.png') }}" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    
+    <!-- PDF.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js"></script>
+    <script>
+        // Setup PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js';
+        
+        // The PDF URL from Flask
+        const pdfUrl = "{{ pdf_url }}";
+        console.log("PDF URL:", pdfUrl);
+    </script>
+    
+    <style>
+        #pdf-container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        #pdf-canvas {
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 15px 0;
+            gap: 15px;
+        }
+        
+        button {
+            padding: 8px 16px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        button:hover {
+            background: #2563eb;
+        }
+        
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        .page-info {
+            font-size: 14px;
+        }
+        
+        #loading-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm mb-4 py-3 px-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <a href="{{ url_for('home') }}" class="text-gray-600 hover:text-gray-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                    </svg>
+                </a>
+                <h1 class="text-xl font-medium text-gray-800">{{ file.original_filename }}</h1>
+            </div>
+            <a href="/download/{{ file.id }}" class="flex items-center gap-1 text-blue-600 hover:text-blue-800">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download
+            </a>
+        </div>
+    </header>
+
+    <!-- Loading indicator -->
+    <div id="loading-indicator">
+        <div class="flex flex-col items-center">
+            <svg class="animate-spin h-10 w-10 text-blue-500 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="text-gray-600">Loading PDF...</p>
+        </div>
+    </div>
+    
+    <!-- PDF Viewer -->
+    <div id="pdf-container" class="mb-10">
+        <div class="controls">
+            <button id="prev-button" disabled>Previous</button>
+            <span class="page-info">Page <span id="page-num"></span> of <span id="page-count"></span></span>
+            <button id="next-button" disabled>Next</button>
+            <button id="zoom-in">Zoom In</button>
+            <button id="zoom-out">Zoom Out</button>
+        </div>
+        
+        <canvas id="pdf-canvas" class="mx-auto"></canvas>
+    </div>
+    
+    <script>
+        // PDF.js rendering script
+        let pdfDoc = null;
+        let pageNum = 1;
+        let scale = 1.5;
+        
+        // Get elements
+        const canvas = document.getElementById('pdf-canvas');
+        const ctx = canvas.getContext('2d');
+        const prevButton = document.getElementById('prev-button');
+        const nextButton = document.getElementById('next-button');
+        const pageNumSpan = document.getElementById('page-num');
+        const pageCountSpan = document.getElementById('page-count');
+        const zoomInButton = document.getElementById('zoom-in');
+        const zoomOutButton = document.getElementById('zoom-out');
+        const loadingIndicator = document.getElementById('loading-indicator');
+
+        // Load the PDF
+        pdfjsLib.getDocument(pdfUrl).promise.then(function(pdf) {
+            pdfDoc = pdf;
+            pageCountSpan.textContent = pdf.numPages;
+            
+            // Enable buttons
+            prevButton.disabled = pageNum <= 1;
+            nextButton.disabled = pageNum >= pdf.numPages;
+            
+            // Render first page
+            renderPage(pageNum);
+        }).catch(function(error) {
+            console.error('Error loading PDF:', error);
+            loadingIndicator.innerHTML = `
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                    <p>Error loading PDF: ${error.message}</p>
+                    <p class="text-sm mt-2">Please try refreshing the page or contact support.</p>
+                </div>
+            `;
+        });
+        
+        // Render a page
+        function renderPage(num) {
+            // Show loading
+            loadingIndicator.style.display = 'flex';
+            
+            // Get page
+            pdfDoc.getPage(num).then(function(page) {
+                // Calculate viewport
+                const viewport = page.getViewport({ scale });
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                
+                // Render PDF page
+                const renderContext = {
+                    canvasContext: ctx,
+                    viewport: viewport
+                };
+                
+                const renderTask = page.render(renderContext);
+                
+                // Hide loading when render is complete
+                renderTask.promise.then(function() {
+                    loadingIndicator.style.display = 'none';
+                    pageNumSpan.textContent = num;
+                    
+                    // Update button states
+                    prevButton.disabled = pageNum <= 1;
+                    nextButton.disabled = pageNum >= pdfDoc.numPages;
+                });
+            });
+        }
+        
+        // Previous page
+        prevButton.addEventListener('click', function() {
+            if (pageNum <= 1) return;
+            pageNum--;
+            renderPage(pageNum);
+        });
+        
+        // Next page
+        nextButton.addEventListener('click', function() {
+            if (pageNum >= pdfDoc.numPages) return;
+            pageNum++;
+            renderPage(pageNum);
+        });
+        
+        // Zoom in
+        zoomInButton.addEventListener('click', function() {
+            scale += 0.2;
+            renderPage(pageNum);
+        });
+        
+        // Zoom out
+        zoomOutButton.addEventListener('click', function() {
+            if (scale <= 0.5) return;
+            scale -= 0.2;
+            renderPage(pageNum);
+        });
+    </script>
+</body>
+</html>
