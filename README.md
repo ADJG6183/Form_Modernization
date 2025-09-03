@@ -27,7 +27,7 @@ A comprehensive PDF form management system for creating, editing, filling, and m
 3. Run the application:
    ```
    cd Form-managment/public/Index
-   python backend/app.py
+   python app.py
    ```
 
 ## Project Structure
